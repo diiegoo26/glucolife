@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:glucolife_app/modelos/usuario.dart';
+import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:glucolife_app/vistas/home/home.dart';
-import 'package:glucolife_app/vistas/signin/agregarUsuario.dart';
+import 'package:glucolife_app/vistas/signin/registro.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -8,8 +11,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final LoginViewModel _loginViewModel = LoginViewModel();
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +41,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.black),
                 ),
                 SizedBox(height: 20.0),
-                _buildTextField('Email', emailController,
+                _buildTextField('Email', _emailController,
                     keyboardType: TextInputType.emailAddress),
                 SizedBox(height: 12.0),
-                _buildTextField('Contraseña', passwordController,
+                _buildTextField('Contraseña', _passwordController,
                     obscureText: true),
                 SizedBox(height: 24.0),
                 ElevatedButton(
-                  onPressed: () async {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()),
-                      );
-                  },
+                  onPressed: _signIn,
                   style: ElevatedButton.styleFrom(
                     primary: Colors.white,
                     onPrimary: Colors.green,
@@ -69,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => AgregarUsuarioScreen()),
+                          builder: (context) => RegistrationForm()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -111,5 +110,26 @@ class _LoginScreenState extends State<LoginScreen> {
         keyboardType: keyboardType,
       ),
     );
+  }
+
+  Future<void> _signIn() async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    Usuario usuario =
+        Usuario(email: email, password: password, nombre: "", apellidos: "");
+
+    try {
+      User? user = await _loginViewModel.signIn(usuario);
+      if (user != null) {
+        print('Usuario logueado: ${user.email}');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+        );
+      }
+    } catch (error) {
+      print('Error durante el inicio de sesión en la vista: $error');
+    }
   }
 }

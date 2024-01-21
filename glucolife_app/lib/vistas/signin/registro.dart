@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/vistas/home/home.dart';
+import 'package:glucolife_app/viewmodel/registro_viewmodel.dart';
 import 'package:intl/intl.dart';
 
 class RegistrationForm extends StatefulWidget {
@@ -9,12 +13,15 @@ class RegistrationForm extends StatefulWidget {
 
 class _RegistrationFormState extends State<RegistrationForm> {
   int _currentStep = 0;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  RegistroViewModel _registroViewModel = RegistroViewModel();
 
   // Campos de entrada para cada sección
-  TextEditingController nombreController = TextEditingController();
-  TextEditingController apellidosController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passController = TextEditingController();
+  TextEditingController _nombreController = TextEditingController();
+  TextEditingController _apellidosController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passController = TextEditingController();
   DateTime selectedDate = DateTime.now();
 
   final List<String> opcionesNivelActividad = [
@@ -45,6 +52,34 @@ class _RegistrationFormState extends State<RegistrationForm> {
   TextEditingController hipoController = TextEditingController();
   TextEditingController objetivoController = TextEditingController();
 
+  void _registrarUsuario() async {
+    // Obtener los valores del TextField
+    String email = _emailController.text.trim();
+    String password = _passController.text.trim();
+    String nombre = _nombreController.text.trim();
+    String apellidos = _apellidosController.text.trim();
+
+    // Validar los campos (puedes agregar más validaciones según tus necesidades)
+
+    // Crear un objeto Usuario
+    Usuario usuario = Usuario(
+        email: email, password: password, nombre: nombre, apellidos: apellidos);
+
+    try {
+      // Llamar al método del ViewModel para registrar el usuario
+      await _registroViewModel.registrarUsuario(usuario);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+      // Registro exitoso, puedes navegar a otra pantalla o realizar otras acciones
+      print('Usuario registrado con éxito');
+    } catch (error) {
+      // Manejar el error (puedes mostrar un mensaje al usuario)
+      print('Error durante el registro: $error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,8 +95,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
               _currentStep += 1;
             });
           } else {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            _registrarUsuario();
             print('Formulario enviado!');
           }
         },
@@ -83,8 +117,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton(
-                        onPressed: () async {
-                        },
+                        onPressed: () async {},
                         child: Text('Seleccionar imagen'),
                       ),
                     ],
@@ -93,27 +126,27 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 SizedBox(height: 10.0),
                 Text('Nombre'),
                 TextFormField(
-                  controller: nombreController,
+                  controller: _nombreController,
                   decoration: InputDecoration(labelText: 'Ingrese su nombre'),
                 ),
                 SizedBox(height: 10.0),
                 Text('Apellidos'),
                 TextFormField(
-                  controller: apellidosController,
+                  controller: _apellidosController,
                   decoration:
                       InputDecoration(labelText: 'Ingrese sus apellidos'),
                 ),
                 SizedBox(height: 10.0),
                 Text('Correo Electrónico'),
                 TextFormField(
-                  controller: emailController,
+                  controller: _emailController,
                   decoration: InputDecoration(
                       labelText: 'Ingrese su correo electrónico'),
                 ),
                 SizedBox(height: 10.0),
                 Text('Contraseña'),
                 TextFormField(
-                  controller: passController,
+                  controller: _passController,
                   obscureText: true,
                   decoration:
                       InputDecoration(labelText: 'Ingrese su contraseña'),
