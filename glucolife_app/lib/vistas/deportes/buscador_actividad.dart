@@ -4,12 +4,12 @@ import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/agregar_actividad.dart';
 import 'package:provider/provider.dart';
 
-class ExerciseScreen extends StatefulWidget {
+class BuscadorActividades extends StatefulWidget {
   @override
-  _ExerciseScreenState createState() => _ExerciseScreenState();
+  _BuscadorActividadesState createState() => _BuscadorActividadesState();
 }
 
-class _ExerciseScreenState extends State<ExerciseScreen> {
+class _BuscadorActividadesState extends State<BuscadorActividades> {
   final TextEditingController _searchController = TextEditingController();
 
   @override

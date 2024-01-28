@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/actividad.dart';
 import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
+import 'package:glucolife_app/vistas/deportes/visualizar_actividad.dart';
 import 'package:provider/provider.dart';
 
 class ExerciseDetailScreen extends StatefulWidget {
@@ -139,8 +140,12 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 // Llamar al método para guardar cambios en Firebase
                 await Provider.of<ActividadViewModel>(context, listen: false)
                     .guardarActividadEnFirebase(widget.ejercicio);
-
-                // Puedes agregar código adicional después de guardar los cambios si es necesario
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VisualizarActividad(),
+                  ),
+                );
               },
               child: Text('Guardar Cambios'),
             ),
