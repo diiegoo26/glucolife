@@ -1,6 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:glucolife_app/servicios/WgerService.dart';
+import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/welcome/welcome.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart'; // Asegúrate de tener el archivo con las opciones de Firebase
 
 void main() async {
@@ -8,7 +13,22 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+
+  // Crea instancias reales de los servicios o proveedores que necesitas
+  WgerService wgerService = WgerService();
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ActividadViewModel(
+        exerciseService: wgerService,
+        firestore: firestore,
+        auth: auth,
+      ),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

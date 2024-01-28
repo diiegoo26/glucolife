@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/viewmodel/registro_viewmodel.dart';
 import 'package:glucolife_app/vistas/alimentacion/visualizacion_datos.dart';
-import 'package:glucolife_app/vistas/deportes/visualizacion_datos.dart';
+import 'package:glucolife_app/vistas/deportes/buscador_actividad.dart';
 import 'package:horizontal_calendar/horizontal_calendar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -60,8 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Lógica para el tercer botón
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => VisualizacionActividad()),
+                MaterialPageRoute(builder: (context) => ExerciseScreen()),
               );
             },
             child: Text('Actividad'),
@@ -72,8 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Lógica para el tercer botón
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => VisualizacionAlimentacion()),
+                MaterialPageRoute(builder: (context) => VisualizarAlimentos()),
               );
             },
             child: Text('Comida'),

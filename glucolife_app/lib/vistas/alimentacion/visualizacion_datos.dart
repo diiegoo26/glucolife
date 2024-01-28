@@ -1,160 +1,78 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:glucolife_app/vistas/alimentacion/buscador_alimentos.dart';
 
-class VisualizacionAlimentacion extends StatefulWidget {
-  @override
-  _VisualizacionAlimentacionState createState() => _VisualizacionAlimentacionState();
-}
-
-class _VisualizacionAlimentacionState extends State<VisualizacionAlimentacion> {
-  TextEditingController _carbsController = TextEditingController();
-  TextEditingController _proteinsController = TextEditingController();
-  TextEditingController _fatsController = TextEditingController();
-
-  List<NutrientData> _nutrientData = [];
-
+class VisualizarAlimentos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Nutrición'),
-        backgroundColor: Colors.green,
-        centerTitle: true,
-        automaticallyImplyLeading: true,
+        title: Text('Visualización de Alimentos'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildNutrientInput(_carbsController, 'Carbohidratos', Colors.red),
-            _buildNutrientInput(_proteinsController, 'Proteínas', Colors.blue),
-            _buildNutrientInput(_fatsController, 'Grasas', Colors.green),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _calculatePercentage,
-              child: Text('Calculador'),
-            ),
-            SizedBox(height: 20),
-            if (_nutrientData.isNotEmpty) ...[
-              _buildNutrientData(),
-              SizedBox(height: 20),
-            ],
-            ElevatedButton(
+      body: Column(
+        children: [
+          Expanded(
+            child: ListaAlimentos(),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => BuscadorAlimentos()),
+                    builder: (context) => BuscadorAlimentos(),
+                  ),
                 );
               },
-              child: Text('Agregar comida'),
+              child: Text('Agregar alimentos'),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildNutrientInput(
-      TextEditingController controller, String nutrient, Color color) {
-    return Column(
-      children: [
-        Container(
-          color: Colors.grey[200],
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: nutrient,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(height: 10),
-      ],
-    );
-  }
-
-  void _calculatePercentage() {
-    double total = double.parse(_carbsController.text) +
-        double.parse(_proteinsController.text) +
-        double.parse(_fatsController.text);
-
-    setState(() {
-      _nutrientData = [
-        NutrientData(
-          'Carbohidratos',
-          double.parse(_carbsController.text),
-          Colors.red,
-          double.parse(_carbsController.text) / total * 100,
-        ),
-        NutrientData(
-          'Proteínas',
-          double.parse(_proteinsController.text),
-          Colors.blue,
-          double.parse(_proteinsController.text) / total * 100,
-        ),
-        NutrientData(
-          'Grasas',
-          double.parse(_fatsController.text),
-          Colors.green,
-          double.parse(_fatsController.text) / total * 100,
-        ),
-      ];
-    });
-  }
-
-  Widget _buildNutrientData() {
-    return Column(
-      children: _nutrientData.map((nutrient) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: 10),
-              Text(
-                '${nutrient.nutrient}: ${nutrient.quantity.toStringAsFixed(2)}g, ${nutrient.percentage.toStringAsFixed(2)}%',
-                style: TextStyle(color: Colors.black),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
     );
   }
 }
 
-class NutrientData {
-  final String nutrient;
-  final double quantity;
-  final double percentage;
-  final Color color;
+class ListaAlimentos extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('alimentos').snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
 
-  NutrientData(this.nutrient, this.quantity, this.color, this.percentage);
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return ListView(
+          children: snapshot.data!.docs.map((DocumentSnapshot document) {
+            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+
+            return Card(
+              elevation: 3, // Añadir sombra
+              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              child: ListTile(
+                title: Text(data['descripcion']),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Calorías: ${data['totalCalorias']} kcal'),
+                    Text('Proteínas: ${data['proteinas']} g'),
+                    Text('Carbohidratos: ${data['carbohidratos']} g'),
+                    Text('Grasas: ${data['grasas']} g'),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
 }
