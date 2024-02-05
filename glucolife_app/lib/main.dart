@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:glucolife_app/provider/provider_usuario.dart';
 import 'package:glucolife_app/servicios/WgerService.dart';
 import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/welcome/welcome.dart';
@@ -14,18 +15,24 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Crea instancias reales de los servicios o proveedores que necesitas
   WgerService wgerService = WgerService();
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
 
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ActividadViewModel(
-        exerciseService: wgerService,
-        firestore: firestore,
-        auth: auth,
-      ),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => UserData(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ActividadViewModel(
+            exerciseService: wgerService,
+            firestore: firestore,
+            auth: auth,
+          ),
+        ),
+      ],
       child: MyApp(),
     ),
   );

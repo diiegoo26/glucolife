@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
-import 'package:glucolife_app/viewmodel/registro_viewmodel.dart';
+import 'package:glucolife_app/provider/provider_usuario.dart';
+import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
+import 'package:glucolife_app/vistas/ajustes/ajustes.dart';
 import 'package:glucolife_app/vistas/alimentacion/visualizacion_datos.dart';
-import 'package:glucolife_app/vistas/deportes/buscador_actividad.dart';
 import 'package:glucolife_app/vistas/deportes/visualizar_actividad.dart';
 import 'package:horizontal_calendar/horizontal_calendar.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -13,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final RegistroViewModel _viewModel = RegistroViewModel();
+  final LoginViewModel _viewModel = LoginViewModel();
   Usuario? _usuario;
 
   @override
@@ -26,11 +28,23 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: GestureDetector(
-            onTap: () {},
-            child: Text('Bienvenido, ${_usuario?.nombre ?? "Usuario"}'),
-          )),
+        automaticallyImplyLeading: false,
+        title: Consumer<UserData>(
+          builder: (context, usuarioModel, child) {
+            return GestureDetector(
+              onTap: () {
+                // Navigate to the settings screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Ajustes()),
+                );
+              },
+              child: Text(
+                  'Bienvenido, ${usuarioModel.usuario?.nombre ?? "Usuario"}'),
+            );
+          },
+        ),
+      ),
       body: ListView(
         shrinkWrap: true,
         children: [
@@ -92,9 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _obtenerUsuarioActual() async {
     try {
       Usuario? usuario = await _viewModel.obtenerUsuarioActual();
-      setState(() {
-        _usuario = usuario;
-      });
+      Provider.of<UserData>(context, listen: false).actualizarUsuario(usuario!);
     } catch (error) {
       // Manejar el error (puedes mostrar un mensaje al usuario)
       print('Error al obtener el usuario: $error');

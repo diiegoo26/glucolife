@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:glucolife_app/vistas/alimentacion/buscador_alimentos.dart';
 import 'package:glucolife_app/vistas/deportes/buscador_actividad.dart';
 
 class VisualizarActividad extends StatelessWidget {

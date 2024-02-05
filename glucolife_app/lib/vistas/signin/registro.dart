@@ -1,9 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
-import 'package:glucolife_app/vistas/home/home.dart';
 import 'package:glucolife_app/viewmodel/registro_viewmodel.dart';
+import 'package:glucolife_app/vistas/home/home.dart';
 import 'package:intl/intl.dart';
 
 class RegistrationForm extends StatefulWidget {
@@ -13,9 +11,7 @@ class RegistrationForm extends StatefulWidget {
 
 class _RegistrationFormState extends State<RegistrationForm> {
   int _currentStep = 0;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  RegistroViewModel _registroViewModel = RegistroViewModel();
+  RegistroViewModel _viewModel = RegistroViewModel();
 
   // Campos de entrada para cada sección
   TextEditingController _nombreController = TextEditingController();
@@ -29,8 +25,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
     'Moderado',
     'Alto',
   ];
-  TextEditingController alturaController = TextEditingController();
-  TextEditingController pesoController = TextEditingController();
+  TextEditingController _alturaController = TextEditingController();
+  TextEditingController _pesoController = TextEditingController();
 
   String selectedNivelActividad = 'Bajo';
 
@@ -48,37 +44,9 @@ class _RegistrationFormState extends State<RegistrationForm> {
     'Unidades',
   ];
 
-  TextEditingController hiperController = TextEditingController();
-  TextEditingController hipoController = TextEditingController();
-  TextEditingController objetivoController = TextEditingController();
-
-  void _registrarUsuario() async {
-    // Obtener los valores del TextField
-    String email = _emailController.text.trim();
-    String password = _passController.text.trim();
-    String nombre = _nombreController.text.trim();
-    String apellidos = _apellidosController.text.trim();
-
-    // Validar los campos (puedes agregar más validaciones según tus necesidades)
-
-    // Crear un objeto Usuario
-    Usuario usuario = Usuario(
-        email: email, password: password, nombre: nombre, apellidos: apellidos);
-
-    try {
-      // Llamar al método del ViewModel para registrar el usuario
-      await _registroViewModel.registrarUsuario(usuario);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-      // Registro exitoso, puedes navegar a otra pantalla o realizar otras acciones
-      print('Usuario registrado con éxito');
-    } catch (error) {
-      // Manejar el error (puedes mostrar un mensaje al usuario)
-      print('Error durante el registro: $error');
-    }
-  }
+  TextEditingController _hiperController = TextEditingController();
+  TextEditingController _hipoController = TextEditingController();
+  TextEditingController _objetivoController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -95,8 +63,28 @@ class _RegistrationFormState extends State<RegistrationForm> {
               _currentStep += 1;
             });
           } else {
-            _registrarUsuario();
-            print('Formulario enviado!');
+            Usuario user = Usuario(
+              nombre: _nombreController.text,
+              apellidos: _apellidosController.text,
+              email: _emailController.text,
+              password: _passController.text,
+              fechaNacimiento: selectedDate,
+              nivelActividad: selectedNivelActividad,
+              altura: double.parse(_alturaController.text),
+              peso: double.parse(_pesoController.text),
+              unidadComida: selectedUnidadComida,
+              unidad: selectedUnidad,
+              hiperglucemia: double.parse(_hiperController.text),
+              hipoglucemia: double.parse(_hipoController.text),
+              objetivo: double.parse(_objetivoController.text),
+            );
+
+            await _viewModel.registerUser(user);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+            print('Formulario enviado y usuario registrado en Firebase!');
           }
         },
         onStepCancel: () {
@@ -200,13 +188,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 SizedBox(height: 10.0),
                 Text('Altura'),
                 TextFormField(
-                  controller: alturaController,
+                  controller: _alturaController,
                   decoration: InputDecoration(labelText: 'Ingrese su altura'),
                 ),
                 SizedBox(height: 10.0),
                 Text('Peso'),
                 TextFormField(
-                  controller: pesoController,
+                  controller: _pesoController,
                   decoration: InputDecoration(labelText: 'Ingrese su peso'),
                 ),
               ],
@@ -252,21 +240,21 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 SizedBox(height: 10.0),
                 Text('Hiperglucemia'),
                 TextFormField(
-                  controller: hiperController,
+                  controller: _hiperController,
                   decoration: InputDecoration(
                       labelText: 'Ingrese el nivel de hiperglucemia'),
                 ),
                 SizedBox(height: 10.0),
                 Text('Hipoglucemia'),
                 TextFormField(
-                  controller: hipoController,
+                  controller: _hipoController,
                   decoration: InputDecoration(
                       labelText: 'Ingrese su nivel de hipoglucemia'),
                 ),
                 SizedBox(height: 10.0),
                 Text('Objetivo'),
                 TextFormField(
-                  controller: objetivoController,
+                  controller: _objetivoController,
                   decoration: InputDecoration(
                       labelText: 'Ingrese su nivel a conseguir'),
                 ),
