@@ -63,8 +63,8 @@ class _CambiarPassState extends State<CambiarPass> {
                       onPressed: () async {
                         String newPassword = _passwordController.text;
 
-                        await _viewModel.cambioPassword(
-                            newPassword: newPassword, newPassword);
+                        /*await _viewModel.cambioPassword(
+                            newPassword: newPassword, newPassword);*/
 
                         await _auth.signOut();
 
