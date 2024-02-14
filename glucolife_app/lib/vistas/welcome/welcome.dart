@@ -13,7 +13,7 @@ class WelcomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage(
-                      'imagenes/fondo.jpg'), // Reemplaza con la ruta de tu imagen
+                      'assets/imagenes/fondo.jpg'), // Reemplaza con la ruta de tu imagen
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.green.withOpacity(
@@ -41,7 +41,18 @@ class WelcomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => LoginScreen()),
                     );
                   },
-                  child: Text('Comenzar'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.white,
+                    onPrimary: Colors.green,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
+                  child: Text(
+                    'Comenzar',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ],
             ),

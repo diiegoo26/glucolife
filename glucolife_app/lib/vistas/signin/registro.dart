@@ -53,6 +53,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Formulario de Registro'),
+        backgroundColor: Colors.green,
       ),
       body: Stepper(
         type: StepperType.horizontal,

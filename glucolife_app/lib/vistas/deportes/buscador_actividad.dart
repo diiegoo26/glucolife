@@ -25,6 +25,7 @@ class _BuscadorActividadesState extends State<BuscadorActividades> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Buscador'),
+        backgroundColor: Colors.green,
       ),
       body: Column(
         children: [

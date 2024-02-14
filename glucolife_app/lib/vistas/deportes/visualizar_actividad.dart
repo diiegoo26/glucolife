@@ -8,6 +8,7 @@ class VisualizarActividad extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Visualización de Actividad'),
+        backgroundColor: Colors.green,
       ),
       body: Column(
         children: [

@@ -44,7 +44,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('imagenes/fondo.jpg'),
+            image: AssetImage('assets/imagenes/fondo.jpg'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.green.withOpacity(0.5),

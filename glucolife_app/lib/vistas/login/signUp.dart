@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage(
-                      'imagenes/fondo.jpg'), // Reemplaza con la ruta de tu imagen
+                      'assets/imagenes/fondo.jpg'), // Reemplaza con la ruta de tu imagen
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.green.withOpacity(

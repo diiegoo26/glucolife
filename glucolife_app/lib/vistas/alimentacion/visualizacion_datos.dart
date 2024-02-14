@@ -8,6 +8,7 @@ class VisualizarAlimentos extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Visualización de Alimentos'),
+        backgroundColor: Colors.green,
       ),
       body: Column(
         children: [
