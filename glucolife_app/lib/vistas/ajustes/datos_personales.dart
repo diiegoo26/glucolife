@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/provider/provider_usuario.dart';
 import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class DatosPersonales extends StatefulWidget {
@@ -39,73 +43,53 @@ class _DatosPersonalesState extends State<DatosPersonales> {
           },
           child: ListView(
             children: [
-              SizedBox(
-                height: 15,
-              ),
-              Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 130,
-                      height: 130,
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                              width: 4,
-                              color: Theme.of(context).scaffoldBackgroundColor),
-                          boxShadow: [
-                            BoxShadow(
-                                spreadRadius: 2,
-                                blurRadius: 10,
-                                color: Colors.black.withOpacity(0.1),
-                                offset: Offset(0, 10))
-                          ],
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                              fit: BoxFit.cover,
-                              image: NetworkImage(
-                                "https://st.depositphotos.com/2101611/3925/v/600/depositphotos_39258143-stock-illustration-businessman-avatar-profile-picture.jpg",
-                              ))),
-                    ),
-                    Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          height: 40,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              width: 4,
-                              color: Theme.of(context).scaffoldBackgroundColor,
-                            ),
-                            color: Colors.green,
-                          ),
-                          child: Icon(
-                            Icons.edit,
-                            color: Colors.white,
-                          ),
-                        )),
-                  ],
+              Container(
+                alignment: Alignment.center,
+                child:  CircleAvatar(
+                  radius: 60.0,
+                  backgroundImage: NetworkImage(_usuario?.imagenUrl ?? ""),
+                  onBackgroundImageError: (exception, stackTrace) {
+                    print('Error cargando la imagen: $exception\n$stackTrace');
+                  },
                 ),
+
+              ),
+              SizedBox(
+                height: 25,
+              ),
+              ElevatedButton(
+                onPressed: () => _pickImage(),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                ),
+                child: Text(
+                  "Cambiar imagen de perfil",
+                  style: TextStyle(
+                      fontSize: 14,
+                      letterSpacing: 2.2,
+                      color: Colors.green),
+                ),
+
               ),
               SizedBox(
                 height: 35,
               ),
-              buildTextField("Nombre Completo", "${_usuario?.nombre}", false,
+              buildTextField("Nombre", "${_usuario?.nombre}", false,
                   (value) {
                 setState(() {
                   _usuario?.nombre = value;
                 });
               }),
+              buildTextField("Apellidos", "${_usuario?.apellidos}", false,
+                      (value) {
+                    setState(() {
+                      _usuario?.apellidos = value;
+                    });
+                  }),
               buildTextField("Email", "${_usuario?.email}", false, (value) {
                 setState(() {
                   _usuario?.email = value;
-                });
-              }),
-              buildTextField("Contraseña", "${_usuario?.password}", true,
-                  (value) {
-                setState(() {
-                  _usuario?.password = value;
                 });
               }),
               SizedBox(
@@ -142,7 +126,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
                         style: TextStyle(
                             fontSize: 14,
                             letterSpacing: 2.2,
-                            color: Colors.white),
+                            color: Colors.green),
                       ),
                     ),
                   )
@@ -167,19 +151,6 @@ class _DatosPersonalesState extends State<DatosPersonales> {
         obscureText: isPasswordTextField ? !showPassword : false,
         onChanged: onChanged,
         decoration: InputDecoration(
-          suffixIcon: isPasswordTextField
-              ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      showPassword = !showPassword;
-                    });
-                  },
-                  icon: Icon(
-                    showPassword ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.green,
-                  ),
-                )
-              : null,
           contentPadding:
               EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
           labelText: labelText,
@@ -196,7 +167,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
             borderSide: BorderSide(
-              color: Colors.blue, // Cambia este color según tus preferencias
+              color: Colors.green, // Cambia este color según tus preferencias
             ),
           ),
         ),
@@ -220,6 +191,13 @@ class _DatosPersonalesState extends State<DatosPersonales> {
     try {
       User? firebaseUser = FirebaseAuth.instance.currentUser;
       if (firebaseUser != null) {
+        // Subir la nueva imagen a Firebase Storage
+        String storagePath = 'usuarios/${firebaseUser.uid}/perfil.jpg';
+        Reference storageReference = FirebaseStorage.instance.ref().child(storagePath);
+        await storageReference.putFile(File(_usuario?.imagenUrl ?? ''));
+        String nuevaImagenUrl = await storageReference.getDownloadURL();
+
+        // Actualizar la URL en Firebase Firestore
         await FirebaseFirestore.instance
             .collection('usuarios')
             .doc(firebaseUser.uid)
@@ -228,9 +206,14 @@ class _DatosPersonalesState extends State<DatosPersonales> {
           'email': _usuario?.email,
           'password': _usuario?.password,
           'fechaNacimiento': _usuario?.fechaNacimiento,
+          'imagenUrl': nuevaImagenUrl,
         });
+
+        // Actualizar el modelo local y mostrar un mensaje de éxito
         UserData usuarioModel = Provider.of<UserData>(context, listen: false);
+        _usuario?.imagenUrl = nuevaImagenUrl;
         usuarioModel.actualizarUsuario(_usuario!);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Cambios guardados correctamente.'),
@@ -246,4 +229,21 @@ class _DatosPersonalesState extends State<DatosPersonales> {
       );
     }
   }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        // Actualizar la imagen en el estado
+        setState(() {
+          _usuario?.imagenUrl = pickedFile.path;
+        });
+      }
+    } catch (e) {
+      print('Error al seleccionar la imagen: $e');
+    }
+  }
+
 }

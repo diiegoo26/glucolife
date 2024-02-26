@@ -1,6 +1,7 @@
+
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:glucolife_app/modelos/actividad.dart';
 import 'package:glucolife_app/servicios/WgerService.dart';
 
@@ -8,7 +9,6 @@ class ActividadViewModel extends ChangeNotifier {
   final WgerService _exerciseService;
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
-  WgerService wgerService = WgerService();
 
   ActividadViewModel({
     required WgerService exerciseService,
@@ -27,7 +27,7 @@ class ActividadViewModel extends ChangeNotifier {
       filteredExercises = List.from(exercises);
       notifyListeners();
     } catch (error) {
-      print('Error al recuperar ejercicios: $error');
+      print('Error: $error al recuperar ejercicios');
       // Manejar el error según tus necesidades
     }
   }
@@ -35,29 +35,26 @@ class ActividadViewModel extends ChangeNotifier {
   void filterExercises(String query) {
     filteredExercises = exercises
         .where((exercise) =>
-            exercise.nombre.toLowerCase().contains(query.toLowerCase()))
+        exercise.nombre.toLowerCase().contains(query.toLowerCase()))
         .toList();
     notifyListeners();
   }
 
   Future<void> guardarActividadEnFirebase(Actividad ejercicio) async {
     try {
-      // Calcular las calorías quemadas
       double caloriasQuemadas =
-          wgerService.calcularCaloriasQuemadas([ejercicio]);
+      _exerciseService.calcularCaloriasQuemadas([ejercicio]);
 
-      // Obtener el usuario actualmente autenticado
       User? currentUser = _auth.currentUser;
 
       if (currentUser != null) {
-        // Si hay un usuario autenticado, obtener su UID
         String uid = currentUser.uid;
 
         CollectionReference actividadesCollection =
-            _firestore.collection('actividades');
+        _firestore.collection('actividades');
 
         await actividadesCollection.add({
-          'usuario': uid, // Añadir el UID del usuario al documento
+          'usuario': uid,
           'nombre': ejercicio.nombre,
           'tiempoRealizado': ejercicio.tiempoRealizado,
           'intensidad': ejercicio.intensidad,
@@ -70,8 +67,39 @@ class ActividadViewModel extends ChangeNotifier {
         // Manejar el caso en el que no haya usuario autenticado según tus necesidades
       }
     } catch (error) {
-      print('Error al almacenar en Firebase: $error');
+      print('Error: $error al almacenar en Firebase');
       // Manejar el error según tus necesidades
     }
+  }
+
+  Future<void> eliminar(BuildContext context, String documentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('actividades')
+          .doc(documentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Actividad eliminada con éxito'),
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al eliminar la actividad'),
+        ),
+      );
+    }
+  }
+}
+
+extension SnackBarExtension on ScaffoldMessengerState {
+  void showSnackBarMessage(String message) {
+    this.showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
   }
 }

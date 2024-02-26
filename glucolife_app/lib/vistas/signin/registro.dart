@@ -1,7 +1,11 @@
+
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/viewmodel/registro_viewmodel.dart';
 import 'package:glucolife_app/vistas/home/home.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class RegistrationForm extends StatefulWidget {
@@ -11,6 +15,7 @@ class RegistrationForm extends StatefulWidget {
 
 class _RegistrationFormState extends State<RegistrationForm> {
   int _currentStep = 0;
+  late String _imagePath;
   RegistroViewModel _viewModel = RegistroViewModel();
 
   // Campos de entrada para cada sección
@@ -78,9 +83,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
               hiperglucemia: double.parse(_hiperController.text),
               hipoglucemia: double.parse(_hipoController.text),
               objetivo: double.parse(_objetivoController.text),
+              imagenUrl: _imagePath,
             );
 
-            await _viewModel.registerUser(user);
+
+            await _viewModel.registerUser(user,_imagePath);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -101,16 +108,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () async {},
-                        child: Text('Seleccionar imagen'),
-                      ),
-                    ],
-                  ),
+                Text('Seleccionar Imagen'),
+                ElevatedButton(
+                  onPressed: () {
+                    _pickImage();
+                  },
+                  child: Text('Seleccionar'),
                 ),
                 SizedBox(height: 10.0),
                 Text('Nombre'),
@@ -280,6 +283,16 @@ class _RegistrationFormState extends State<RegistrationForm> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imagePath = pickedFile.path;
       });
     }
   }

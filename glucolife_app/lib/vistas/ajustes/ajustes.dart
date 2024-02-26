@@ -1,11 +1,13 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/provider/provider_usuario.dart';
-import 'package:glucolife_app/viewmodel/ajustes_viewmodel.dart';
 import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:glucolife_app/vistas/ajustes/datos_medicos.dart';
 import 'package:glucolife_app/vistas/ajustes/datos_personales.dart';
+import 'package:glucolife_app/vistas/welcome/welcome.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -23,7 +25,7 @@ class AjustesScreen extends StatefulWidget {
 
 class _AjustesScreenState extends State<AjustesScreen> {
   final LoginViewModel _viewModel = LoginViewModel();
-  final AjustesViewModel _viewModelAjustes = AjustesViewModel();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   Usuario? _usuario;
   final TextStyle greyTExt = TextStyle(
     color: Colors.grey.shade600,
@@ -63,6 +65,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
               const SizedBox(height: 20.0),
               _buildCard("Datos personales", irDatosPersonales),
               _buildCard("Datos Medicos", irDatosMedicos),
+              _buildCard("Cambio de contraseña",irCambioContrasena),
               _buildLogoutTile(),
             ],
           ),
@@ -74,8 +77,13 @@ class _AjustesScreenState extends State<AjustesScreen> {
   Widget _buildUserProfile() {
     return Row(
       children: <Widget>[
-        CircularProfileAvatar(
-          "https://st.depositphotos.com/2101611/3925/v/600/depositphotos_39258143-stock-illustration-businessman-avatar-profile-picture.jpg",
+        CircleAvatar(
+          radius: 20.0,
+          backgroundImage: NetworkImage(_usuario?.imagenUrl ?? ""),
+          onBackgroundImageError: (exception, stackTrace) {
+            print('Error cargando la imagen: $exception\n$stackTrace');
+            // Puedes tomar acciones adicionales aquí, como mostrar una imagen de relleno.
+          },
         ),
         const SizedBox(width: 10.0),
         Consumer<UserData>(
@@ -113,22 +121,6 @@ class _AjustesScreenState extends State<AjustesScreen> {
     );
   }
 
-  Widget _buildLogoutTile() {
-    return ListTile(
-      title: Text(
-        "Salir",
-        style: GoogleFonts.montserrat(color: Colors.white),
-      ),
-      trailing: Icon(
-        Icons.login,
-        color: Colors.white,
-      ),
-      onTap: () {
-        _viewModelAjustes.cerrarSesion();
-      },
-    );
-  }
-
   void irDatosPersonales() {
     Navigator.push(
       context,
@@ -143,6 +135,44 @@ class _AjustesScreenState extends State<AjustesScreen> {
     );
   }
 
+  void irCambioContrasena() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        String email = '';
+
+        return AlertDialog(
+          title: Text('Ingrese su correo electrónico'),
+          content: TextFormField(
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: 'Correo electrónico',
+            ),
+            onChanged: (value) {
+              email = value;
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _auth.sendPasswordResetEmail(email: email);
+              },
+              child: Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   void _obtenerUsuarioActual() async {
     try {
       Usuario? usuario = await _viewModel.obtenerUsuarioActual();
@@ -155,12 +185,48 @@ class _AjustesScreenState extends State<AjustesScreen> {
     }
   }
 
-  void cerrarSesion() async {
-    try {
-      await _viewModelAjustes.cerrarSesion();
-      print('Sesión cerrada correctamente');
-    } catch (error) {
-      print('Error al cerrar la sesión: $error');
-    }
+  void _mostrarDialogoCerrarSesion() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('¿Cerrar Sesión?'),
+          content: Text('¿Estás seguro de que deseas cerrar sesión?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                FirebaseAuth.instance.signOut();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                );
+              },
+              child: Text('Cerrar Sesión'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  Widget _buildLogoutTile() {
+    return ListTile(
+      title: Text(
+        "Salir",
+        style: GoogleFonts.montserrat(color: Colors.white),
+      ),
+      trailing: Icon(
+        Icons.login,
+        color: Colors.white,
+      ),
+      onTap: () {
+        _mostrarDialogoCerrarSesion(); // Llamada aquí en respuesta a la acción del usuario
+      },
+    );
   }
 }

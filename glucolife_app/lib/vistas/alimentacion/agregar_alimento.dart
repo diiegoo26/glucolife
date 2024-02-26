@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/alimentos.dart';
 import 'package:glucolife_app/servicios/NutritionixService.dart';
 import 'package:glucolife_app/viewmodel/alimentos_viewmodel.dart';
-import 'package:glucolife_app/vistas/alimentacion/tarjeta.dart';
+import 'package:glucolife_app/vistas/alimentacion/tarjeta_alimentacion.dart';
 import 'package:glucolife_app/vistas/alimentacion/visualizacion_datos.dart';
 
 class ItemDetailScreen extends StatefulWidget {
@@ -76,17 +76,17 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Tarjeta(
+                          TarjetaAlimentacion(
                             'Proteinas',
                             '$totalProteinas',
                             'g',
                           ),
-                          Tarjeta(
+                          TarjetaAlimentacion(
                             'Carbohidratos',
                             '$totalCarbohidratos',
                             'g',
                           ),
-                          Tarjeta(
+                          TarjetaAlimentacion(
                             'Grasas',
                             '$totalGrasas',
                             'g',
@@ -114,7 +114,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Tarjeta(
+                      child: TarjetaAlimentacion(
                         'Total Calorías',
                         '$totalCalorias',
                         'kcal',

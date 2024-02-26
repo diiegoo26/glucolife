@@ -27,23 +27,25 @@ class LoginViewModel {
       if (user != null) {
         // Obtén el documento del usuario en Firestore
         DocumentSnapshot userSnapshot =
-            await _firestore.collection('usuarios').doc(user.uid).get();
+        await _firestore.collection('usuarios').doc(user.uid).get();
 
         // Construye una instancia de Usuario desde el mapa
         return Usuario(
-            email: userSnapshot['email'],
-            nombre: userSnapshot['nombre'],
-            apellidos: userSnapshot['apellidos'],
-            password: '',
-            fechaNacimiento: DateTime(1990, 1, 1),
-            nivelActividad: userSnapshot['nivelActividad'],
-            altura: userSnapshot['altura'],
-            peso: userSnapshot['peso'],
-            unidadComida: userSnapshot['unidadComida'],
-            unidad: userSnapshot['unidad'],
-            hipoglucemia: userSnapshot['hipoglucemia'],
-            hiperglucemia: userSnapshot['hiperglucemia'],
-            objetivo: userSnapshot['objetivo']);
+          email: userSnapshot['email'],
+          nombre: userSnapshot['nombre'],
+          apellidos: userSnapshot['apellidos'],
+          password: '',
+          fechaNacimiento: userSnapshot['fechaNacimiento'].toDate(),
+          nivelActividad: userSnapshot['nivelActividad'],
+          altura: userSnapshot['altura'],
+          peso: userSnapshot['peso'],
+          unidadComida: userSnapshot['unidadComida'],
+          unidad: userSnapshot['unidad'],
+          hipoglucemia: userSnapshot['hipoglucemia'],
+          hiperglucemia: userSnapshot['hiperglucemia'],
+          objetivo: userSnapshot['objetivo'],
+          imagenUrl: userSnapshot['imagenUrl'],
+        );
       }
     } catch (error) {
       print('Error al obtener el usuario: $error');
@@ -70,6 +72,7 @@ class LoginViewModel {
         'hiperglucemia': usuario.hiperglucemia,
         'hipoglucemia': usuario.hipoglucemia,
         'objetivo': usuario.objetivo,
+        'imagenUrl':usuario.imagenUrl,
         // Asegúrate de incluir los demás campos del usuario
       });
 

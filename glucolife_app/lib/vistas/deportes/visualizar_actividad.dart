@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:glucolife_app/servicios/WgerService.dart';
+import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/buscador_actividad.dart';
 
 class VisualizarActividad extends StatelessWidget {
@@ -9,7 +12,15 @@ class VisualizarActividad extends StatelessWidget {
       appBar: AppBar(
         title: Text('Visualización de Actividad'),
         backgroundColor: Colors.green,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/home');
+          },
+
+        ),
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -36,6 +47,11 @@ class VisualizarActividad extends StatelessWidget {
 }
 
 class ListaActividades extends StatelessWidget {
+  ActividadViewModel _viewModel = ActividadViewModel(
+    exerciseService: WgerService(), // Reemplaza con tu instancia de WgerService
+    firestore: FirebaseFirestore.instance,
+    auth: FirebaseAuth.instance,
+  );
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -68,6 +84,13 @@ class ListaActividades extends StatelessWidget {
                     Text('Carbohidratos: ${data['carbohidratos']} g'),
                     Text('Grasas: ${data['grasas']} g'),
                   ],*/
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    // Llamar a la función para eliminar el medicamento
+                    _viewModel.eliminar(context, document.id);
+                  },
                 ),
               ),
             );

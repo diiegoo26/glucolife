@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class Tarjeta extends StatelessWidget {
+class TarjetaAlimentacion extends StatelessWidget {
   final String title;
   final String value;
   final String unit;
 
-  Tarjeta(this.title, this.value, this.unit);
+  TarjetaAlimentacion(this.title, this.value, this.unit);
 
   @override
   Widget build(BuildContext context) {

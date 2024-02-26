@@ -12,6 +12,7 @@ class Usuario {
   double hiperglucemia;
   double hipoglucemia;
   double objetivo;
+  String imagenUrl;
 
   Usuario({
     required this.nombre,
@@ -27,5 +28,6 @@ class Usuario {
     required this.hiperglucemia,
     required this.hipoglucemia,
     required this.objetivo,
+    required this.imagenUrl,
   });
 }
