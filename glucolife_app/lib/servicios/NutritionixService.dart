@@ -16,9 +16,12 @@ class USDAFood {
       if (data.containsKey('foods')) {
         List<dynamic> foods = data['foods'];
 
+        DateTime fechaActual = DateTime.now();
+
         // Filtrar los alimentos para mostrar solo las proteínas, grasas e hidratos
         List<Alimentos> results = foods.map((food) {
           List<Nutriente> nutrientes = [];
+
 
           if (food['foodNutrients'] != null &&
               food['foodNutrients'].isNotEmpty) {
@@ -44,6 +47,7 @@ class USDAFood {
             fdcId: food['fdcId'],
             description: food['description'].toString(),
             foodNutrients: nutrientes,
+            fechaRegistro: fechaActual,
           );
         }).toList();
 

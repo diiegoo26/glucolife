@@ -1,24 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/vistas/home/home.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginViewModel {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> signIn(
+  Future<bool> signIn(
       BuildContext context, String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
 
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => HomeScreen()));
+      return true;
     } catch (e) {
       // Manejar errores de inicio de sesión aquí, por ejemplo, mostrar un mensaje de error.
       print('Error al iniciar sesión: $e');
     }
+    return false;
   }
 
   Future<Usuario?> obtenerUsuarioActual() async {
@@ -81,6 +85,39 @@ class LoginViewModel {
       print('Error al actualizar el usuario en Firebase: $error');
       // Manejar el error según tus necesidades
       throw error;
+    }
+  }
+
+  Future<void> signInWithGoogle(BuildContext context) async {
+    try {
+      GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+
+      AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
+
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Imprimir el nombre de usuario
+      print(userCredential.user?.displayName);
+
+      // Obtener la referencia a la colección "usuarios" en Cloud Firestore
+      CollectionReference usersCollection = FirebaseFirestore.instance.collection('usuarios');
+
+      // Crear un documento en la colección con la información del usuario
+      await usersCollection.doc(userCredential.user?.uid).set({
+        "nombre": userCredential.user?.displayName,
+        "email": userCredential.user?.email,
+        // Puedes agregar más campos según la información que quieras almacenar
+      });
+
+      // Navegar a la vista "home" después del registro exitoso
+      Navigator.pushReplacementNamed(context, '/home'); // Reemplaza la vista actual con la vista "home"
+    } catch (e) {
+      // Manejar errores de autenticación
+      print("Error durante el inicio de sesión con Google: $e");
     }
   }
 }

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:glucolife_app/modelos/actividad.dart';
 import 'package:glucolife_app/servicios/WgerService.dart';
+import 'package:intl/intl.dart';
 
 class ActividadViewModel extends ChangeNotifier {
   final WgerService _exerciseService;
@@ -59,6 +60,7 @@ class ActividadViewModel extends ChangeNotifier {
           'tiempoRealizado': ejercicio.tiempoRealizado,
           'intensidad': ejercicio.intensidad,
           'caloriasQuemadas': caloriasQuemadas,
+          'fechaRegistro': DateFormat('yyyy-MM-dd').format(DateTime.now().toLocal()),
         });
 
         // Mensaje de éxito o realizar otras acciones después de almacenar en Firebase

@@ -3,12 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/alimentos.dart';
 import 'package:glucolife_app/servicios/NutritionixService.dart';
+import 'package:intl/intl.dart';
+
 
 class AlimentosViewModel {
   USDAFood usdaFood = USDAFood();
 
   // Obtener la instancia de FirebaseAuth
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
 
   Future<void> agregarAlimentoAFirebase(
       Alimentos product, int cantidadUnidades) async {
@@ -25,10 +29,12 @@ class AlimentosViewModel {
 
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         CollectionReference alimentosCollection =
-            firestore.collection('alimentos');
+        firestore.collection('alimentos');
+
+        Timestamp fecha = Timestamp.now(); // Obtener la fecha y hora actuales
 
         await alimentosCollection.add({
-          'usuario': uid, // Añadir el UID del usuario al documento
+          'usuario': uid,
           'descripcion': product.description,
           'proteinas': product.foodNutrients
               .where((nutriente) => nutriente.nutrientName == 'Protein')
@@ -36,16 +42,19 @@ class AlimentosViewModel {
               .join(', '),
           'carbohidratos': product.foodNutrients
               .where((nutriente) =>
-                  nutriente.nutrientName == 'Carbohydrate, by difference')
+          nutriente.nutrientName == 'Carbohydrate, by difference')
               .map((nutriente) => nutriente.value)
               .join(', '),
           'grasas': product.foodNutrients
-              .where(
-                  (nutriente) => nutriente.nutrientName == 'Total lipid (fat)')
+              .where((nutriente) => nutriente.nutrientName == 'Total lipid (fat)')
               .map((nutriente) => nutriente.value)
               .join(', '),
           'totalCalorias': totalCalorias,
           'cantidadUnidades': cantidadUnidades,
+          'fechaRegistro': DateFormat('yyyy-MM-dd').format(DateTime.now().toLocal()),
+
+
+
         });
 
         // Mensaje de éxito o realizar otras acciones después de almacenar en Firebase
@@ -58,6 +67,7 @@ class AlimentosViewModel {
       // Manejar el error según tus necesidades
     }
   }
+
 
   Future<void> eliminar(BuildContext context, String documentId) async {
     try {
@@ -137,5 +147,42 @@ class AlimentosViewModel {
       }; // O cualquier otro valor predeterminado
     }
   }
+
+  Future<List<Map<String, dynamic>>> obtenerAlimentosPorFecha(String fecha) async {
+    try {
+      // Obtener el usuario actualmente autenticado
+      User? currentUser = _auth.currentUser;
+
+      if (currentUser != null) {
+        // Si hay un usuario autenticado, obtener su UID
+        String uid = currentUser.uid;
+
+        // Obtener la referencia a la colección de alimentos
+        CollectionReference alimentosCollection = firestore.collection('alimentos');
+
+        // Obtener documentos que pertenecen al usuario y tienen la fecha dada
+        QuerySnapshot querySnapshot = await alimentosCollection
+            .where('usuario', isEqualTo: uid)
+            .where('fechaRegistro', isEqualTo: fecha)
+            .get();
+
+        // Mapear los documentos a una lista de mapas
+        List<Map<String, dynamic>> alimentosList = querySnapshot.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .toList();
+
+        return alimentosList;
+      } else {
+        // Manejar el caso en el que no haya usuario autenticado según tus necesidades
+        print('Usuario no autenticado');
+        return []; // O cualquier otro valor predeterminado
+      }
+    } catch (error) {
+      // Manejar el error según tus necesidades
+      print('Error al obtener alimentos por fecha: $error');
+      return []; // O cualquier otro valor predeterminado
+    }
+  }
+
 
 }

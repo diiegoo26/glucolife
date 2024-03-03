@@ -7,6 +7,7 @@ class WgerService {
 
   Future<List<Actividad>> fetchExercises() async {
     final response = await http.get(Uri.parse(apiUrl));
+    DateTime fechaActual = DateTime.now();
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['results'];
       return data
@@ -14,7 +15,8 @@ class WgerService {
               nombre: item['name'],
               intensidad: "",
               tiempoRealizado: "",
-              caloriasQuemadas: 0.0))
+              caloriasQuemadas: 0.0,
+              fechaRegistro: fechaActual))
           .toList();
     } else {
       throw Exception('Failed to load exercises');

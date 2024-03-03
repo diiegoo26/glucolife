@@ -1,23 +1,23 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:glucolife_app/servicios/WgerService.dart';
-import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/buscador_actividad.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../../provider/provider_fecha.dart';
 
 class VisualizarActividad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final selectedDateModel = Provider.of<SelectedDateModel>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Visualización de Actividad'),
+        title: Text('Actividad física'), // Mostrar la fecha seleccionada
         backgroundColor: Colors.green,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pushReplacementNamed(context, '/home');
           },
-
         ),
       ),
 
@@ -25,6 +25,9 @@ class VisualizarActividad extends StatelessWidget {
         children: [
           Expanded(
             child: ListaActividades(),
+          ),
+          SizedBox(
+            height: 4,
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -47,15 +50,17 @@ class VisualizarActividad extends StatelessWidget {
 }
 
 class ListaActividades extends StatelessWidget {
-  ActividadViewModel _viewModel = ActividadViewModel(
-    exerciseService: WgerService(), // Reemplaza con tu instancia de WgerService
-    firestore: FirebaseFirestore.instance,
-    auth: FirebaseAuth.instance,
-  );
   @override
   Widget build(BuildContext context) {
+    final selectedDateModel = Provider.of<SelectedDateModel>(context);
+    DateTime selectedDate = selectedDateModel.selectedDate;
+
+    final dateFormatter = DateFormat('yyyy-MM-dd');
+
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('actividades').snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('actividades')
+          .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -67,8 +72,20 @@ class ListaActividades extends StatelessWidget {
           );
         }
 
+        // Filtrar los documentos por fecha en Flutter (no en Firestore)
+        List<QueryDocumentSnapshot> filteredDocs = snapshot.data!.docs
+            .where((document) {
+          Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+          String dateString = data['fechaRegistro'];
+          // Convertir la cadena de fecha a DateTime
+          DateTime foodDate = dateFormatter.parse(dateString);
+          // Comparar las fechas
+          return dateFormatter.format(foodDate) == dateFormatter.format(selectedDate);
+        })
+            .toList();
+
         return ListView(
-          children: snapshot.data!.docs.map((DocumentSnapshot document) {
+          children: filteredDocs.map((DocumentSnapshot document) {
             Map<String, dynamic> data = document.data() as Map<String, dynamic>;
 
             return Card(
@@ -76,22 +93,6 @@ class ListaActividades extends StatelessWidget {
               margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: ListTile(
                 title: Text(data['nombre']),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  /*children: [
-                    Text('Calorías: ${data['totalCalorias']} kcal'),
-                    Text('Proteínas: ${data['proteinas']} g'),
-                    Text('Carbohidratos: ${data['carbohidratos']} g'),
-                    Text('Grasas: ${data['grasas']} g'),
-                  ],*/
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    // Llamar a la función para eliminar el medicamento
-                    _viewModel.eliminar(context, document.id);
-                  },
-                ),
               ),
             );
           }).toList(),
@@ -100,3 +101,5 @@ class ListaActividades extends StatelessWidget {
     );
   }
 }
+
+

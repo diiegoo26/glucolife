@@ -2,9 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:glucolife_app/provider/provider_fecha.dart';
 import 'package:glucolife_app/provider/provider_usuario.dart';
 import 'package:glucolife_app/servicios/WgerService.dart';
 import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
+import 'package:glucolife_app/viewmodel/home_viewmodel.dart';
 import 'package:glucolife_app/vistas/home/home.dart';
 import 'package:glucolife_app/vistas/welcome/welcome.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +35,10 @@ void main() async {
             firestore: firestore,
             auth: auth,
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SelectedDateModel(),
+          child: MyApp(),
         ),
       ],
       child: MyApp(),
