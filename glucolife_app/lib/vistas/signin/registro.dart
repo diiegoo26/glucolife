@@ -15,7 +15,7 @@ class RegistrationForm extends StatefulWidget {
 
 class _RegistrationFormState extends State<RegistrationForm> {
   int _currentStep = 0;
-  late String _imagePath;
+  String? _imagePath;
   RegistroViewModel _viewModel = RegistroViewModel();
 
   // Campos de entrada para cada sección
@@ -83,11 +83,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
               hiperglucemia: double.parse(_hiperController.text),
               hipoglucemia: double.parse(_hipoController.text),
               objetivo: double.parse(_objetivoController.text),
-              imagenUrl: _imagePath,
+              imagenUrl: _imagePath!,
             );
 
 
-            await _viewModel.registerUser(user,_imagePath);
+            await _viewModel.registerUser(user,_imagePath!);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -104,17 +104,40 @@ class _RegistrationFormState extends State<RegistrationForm> {
         },
         steps: [
           Step(
-            title: Text('Sección 1'),
+            title: Flexible(
+              child: Text(
+                'Personal',
+                style: _currentStep == 0 ? TextStyle(color: Colors.green, fontWeight: FontWeight.bold) : null,
+              ),
+            ),
+            isActive: _currentStep == 0,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Seleccionar Imagen'),
+            Center(
+            child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _imagePath != null
+                    ? ClipOval(
+                  child: Image.file(
+                    File(_imagePath!),
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                )
+                    : Container(), // Un contenedor vacío si no hay imagen seleccionada
+                SizedBox(height: 10.0),
                 ElevatedButton(
                   onPressed: () {
                     _pickImage();
                   },
-                  child: Text('Seleccionar'),
+                  child: Text('Seleccionar Imagen'),
                 ),
+              ],
+            ),
+            ),
                 SizedBox(height: 10.0),
                 Text('Nombre'),
                 TextFormField(
@@ -169,7 +192,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
             ),
           ),
           Step(
-            title: Text('Sección 2'),
+            title: Flexible(
+              child: Text(
+                'Física',
+                style: _currentStep == 1 ? TextStyle(color: Colors.green, fontWeight: FontWeight.bold) : null,
+              ),
+            ),
+            isActive: _currentStep == 1,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -205,7 +234,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
             ),
           ),
           Step(
-            title: Text('Sección 3'),
+            title: Flexible(
+              child: Text(
+                'Medica',
+                style: _currentStep == 2 ? TextStyle(color: Colors.green, fontWeight: FontWeight.bold) : null,
+              ),
+            ),
+            isActive: _currentStep == 2,
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -289,7 +324,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       setState(() {
         _imagePath = pickedFile.path;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/buscador_actividad.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -93,12 +94,48 @@ class ListaActividades extends StatelessWidget {
               margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: ListTile(
                 title: Text(data['nombre']),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Intensidad: ${data['intensidad']}'),
+                    Text('Duración: ${data['tiempoRealizado']}'),
+                    Text('Calorias quemadas: ${data['caloriasQuemadas']} kcal'),
+                  ],
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    // Llamar a la función para eliminar el medicamento
+                    eliminar(context, document.id);
+                  },
+                ),
               ),
             );
           }).toList(),
         );
       },
     );
+  }
+
+  void eliminar(BuildContext context, String documentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('actividades')
+          .doc(documentId)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Actividad eliminada con éxito'),
+        ),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al eliminar la actividad'),
+        ),
+      );
+    }
   }
 }
 

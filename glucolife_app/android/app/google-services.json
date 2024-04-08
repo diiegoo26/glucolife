@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "225272454831",
-    "project_id": "glucolife-d0108",
-    "storage_bucket": "glucolife-d0108.appspot.com"
+    "project_number": "73253916918",
+    "project_id": "glucolife-13b84",
+    "storage_bucket": "glucolife-13b84.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:225272454831:android:9a8889e59a8913257afe5a",
+        "mobilesdk_app_id": "1:73253916918:android:d26947c27dec9ecb7f9cd7",
         "android_client_info": {
           "package_name": "com.example.glucolife_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBTZy6KTm7Y4zn_oGqj7o52-zkx0hTj4V0"
+          "current_key": "AIzaSyBvfJ7mTBiczZrg-wx3BM3MfD6cJ1CyfWo"
         }
       ],
       "services": {

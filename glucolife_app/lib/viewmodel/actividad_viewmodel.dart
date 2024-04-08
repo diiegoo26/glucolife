@@ -59,7 +59,7 @@ class ActividadViewModel extends ChangeNotifier {
           'nombre': ejercicio.nombre,
           'tiempoRealizado': ejercicio.tiempoRealizado,
           'intensidad': ejercicio.intensidad,
-          'caloriasQuemadas': caloriasQuemadas,
+          'caloriasQuemadas': ejercicio.caloriasQuemadas,
           'fechaRegistro': DateFormat('yyyy-MM-dd').format(DateTime.now().toLocal()),
         });
 
@@ -93,15 +93,5 @@ class ActividadViewModel extends ChangeNotifier {
         ),
       );
     }
-  }
-}
-
-extension SnackBarExtension on ScaffoldMessengerState {
-  void showSnackBarMessage(String message) {
-    this.showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
   }
 }

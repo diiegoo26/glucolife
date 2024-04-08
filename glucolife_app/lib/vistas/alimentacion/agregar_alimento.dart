@@ -22,14 +22,10 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   Widget build(BuildContext context) {
     USDAFood usdaFood = USDAFood(); // Instancia de la clase USDAFood
 
-    double totalCalorias =
-        usdaFood.calcularCaloriasTotales([widget.product]) * unidades;
-    double totalProteinas =
-        usdaFood.calcularTotalProteinas([widget.product]) * unidades;
-    double totalCarbohidratos =
-        usdaFood.calcularTotalCarbohidratos([widget.product]);
-    double totalGrasas =
-        usdaFood.calcularTotalGrasas([widget.product]) * unidades;
+    double totalCalorias = double.parse((usdaFood.calcularCaloriasTotales([widget.product]) * unidades).toStringAsFixed(2));
+    double totalProteinas = double.parse((usdaFood.calcularTotalProteinas([widget.product]) * unidades).toStringAsFixed(2));
+    double totalGrasas = double.parse((usdaFood.calcularTotalGrasas([widget.product]) * unidades).toStringAsFixed(2));
+    double totalCarbohidratos = double.parse(usdaFood.calcularTotalCarbohidratos([widget.product]).toStringAsFixed(2));
 
     return Scaffold(
       backgroundColor: Colors.green,
@@ -67,8 +63,8 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                             fontSize: 20.0, fontWeight: FontWeight.bold),
                       ),
                       subtitle: CircleAvatar(
-                        radius: 40.0,
-                        backgroundImage: AssetImage(''),
+                        radius: 60.0,
+                        backgroundImage: AssetImage('assets/imagenes/comida.webp'),
                       ),
                     ),
                     Padding(
@@ -97,54 +93,56 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 16.0),
-              Card(
-                elevation: 5.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Unidades: $unidades',
-                        style: TextStyle(fontSize: 18.0),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TarjetaAlimentacion(
-                        'Total Calorías',
-                        '$totalCalorias',
-                        'kcal',
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              unidades++;
-                            });
-                          },
-                          child: Text('Añadir unidad'),
+              SizedBox(height: 20.0),
+              Expanded(
+                child: Card(
+                  elevation: 5.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TarjetaAlimentacion(
+                          'Total Calorías',
+                          '$totalCalorias',
+                          'kcal',
                         ),
-                        SizedBox(width: 10.0),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (unidades > 1) {
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
                               setState(() {
-                                unidades--;
+                                unidades++;
                               });
-                            }
-                          },
-                          child: Text('Quitar unidad'),
+                            },
+                            child: Text('Añadir unidad'),
+                          ),
+                          SizedBox(width: 10.0),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (unidades > 1) {
+                                setState(() {
+                                  unidades--;
+                                });
+                              }
+                            },
+                            child: Text('Quitar unidad'),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Unidades: $unidades',
+                          style: TextStyle(fontSize: 18.0),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 20.0),

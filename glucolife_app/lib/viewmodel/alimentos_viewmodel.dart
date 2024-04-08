@@ -52,9 +52,6 @@ class AlimentosViewModel {
           'totalCalorias': totalCalorias,
           'cantidadUnidades': cantidadUnidades,
           'fechaRegistro': DateFormat('yyyy-MM-dd').format(DateTime.now().toLocal()),
-
-
-
         });
 
         // Mensaje de éxito o realizar otras acciones después de almacenar en Firebase
@@ -183,6 +180,4 @@ class AlimentosViewModel {
       return []; // O cualquier otro valor predeterminado
     }
   }
-
-
 }

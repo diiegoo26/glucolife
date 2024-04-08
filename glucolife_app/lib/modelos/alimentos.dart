@@ -1,10 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Alimentos {
-  final int fdcId;
-  final String description;
-  final List<Nutriente> foodNutrients;
-  final DateTime fechaRegistro;
+   int fdcId;
+   String description;
+   List<Nutriente> foodNutrients;
+   DateTime fechaRegistro;
 
   Alimentos({
     required this.fdcId,

@@ -61,7 +61,7 @@ class LoginViewModel {
     try {
       User? user = _auth.currentUser;
       DocumentReference usuarioRef =
-          FirebaseFirestore.instance.collection('usuarios').doc(user?.uid);
+      FirebaseFirestore.instance.collection('usuarios').doc(user?.uid);
 
       // Actualiza los datos del documento
       await usuarioRef.update({

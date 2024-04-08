@@ -3,7 +3,7 @@ import 'package:glucolife_app/modelos/actividad.dart';
 import 'package:http/http.dart' as http;
 
 class WgerService {
-  final String apiUrl = 'https://wger.de/api/v2/exercise/';
+  final String apiUrl = 'https://wger.de/api/v2/exerciseinfo/';
 
   Future<List<Actividad>> fetchExercises() async {
     final response = await http.get(Uri.parse(apiUrl));

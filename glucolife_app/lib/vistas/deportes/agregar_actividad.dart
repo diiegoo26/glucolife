@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/actividad.dart';
+import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
+import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/visualizar_actividad.dart';
 import 'package:provider/provider.dart';
 
@@ -43,16 +45,27 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     }
   }
 
-  double calcularCaloriasQuemadas(String tiempo, String intensidad) {
-    double factorIntensidad =
-        intensidad == 'Alta' ? 2.0 : (intensidad == 'Moderada' ? 1.5 : 1.0);
+  double calcularCaloriasQuemadas(String tiempo, String intensidad, double peso, double altura) {
+    double factorIntensidad = intensidad == 'Alta' ? 2.0 : (intensidad == 'Moderada' ? 1.5 : 1.0);
     double tiempoRealizado = double.tryParse(tiempo.split(' ')[0]) ?? 0.0;
-    return tiempoRealizado * factorIntensidad;
+
+    // Fórmula de Harris-Benedict para el metabolismo basal (MB)
+    double mb = 66.5 + (13.75 * peso) + (5.003 * altura) - (6.75 * 25); // En hombres
+    // Para mujeres, el cálculo sería ligeramente diferente
+
+    // Calorías quemadas por minuto
+    double caloriasPorMinuto = mb / tiempoRealizado; // 1440 es el número de minutos en un día
+
+    // Calorías quemadas durante el ejercicio
+    double caloriasQuemadas = caloriasPorMinuto * tiempoRealizado * factorIntensidad;
+
+    return caloriasQuemadas;
   }
+
 
   void calcularYMostrarCalorias() {
     double caloriasQuemadas =
-        calcularCaloriasQuemadas(_selectedTiempo, _selectedIntensidad);
+    calcularCaloriasQuemadas(_selectedTiempo, _selectedIntensidad,98,180);
     setState(() {
       _caloriasQuemadas = caloriasQuemadas;
     });
@@ -68,7 +81,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'Nombre del ejercicio:',
@@ -79,7 +92,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               widget.ejercicio.nombre,
               style: TextStyle(fontSize: 20),
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 24),
             Text(
               'Tiempo realizado:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -99,7 +112,7 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 });
               },
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 24),
             Text(
               'Intensidad:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -119,17 +132,21 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 });
               },
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 32),
             ElevatedButton(
               onPressed: calcularYMostrarCalorias,
               child: Text('Calcular Calorías'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.green,
+                onPrimary: Colors.white,
+              ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
             Text(
               'Calorías Quemadas: $_caloriasQuemadas',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
             ElevatedButton(
               onPressed: () async {
                 setState(() {
@@ -149,6 +166,10 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                 );
               },
               child: Text('Guardar Cambios'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.green,
+                onPrimary: Colors.white,
+              ),
             ),
           ],
         ),
