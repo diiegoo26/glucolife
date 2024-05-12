@@ -1,53 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/alimentos.dart';
-import 'package:glucolife_app/servicios/NutritionixService.dart';
+import 'package:glucolife_app/provider/provider_fecha.dart';
 import 'package:glucolife_app/viewmodel/alimentos_viewmodel.dart';
 import 'package:glucolife_app/vistas/alimentacion/tarjeta_alimentacion.dart';
 import 'package:glucolife_app/vistas/alimentacion/visualizacion_datos.dart';
+import 'package:provider/provider.dart';
 
-class ItemDetailScreen extends StatefulWidget {
-  final Alimentos product;
+class AgregarAlimentoVista extends StatefulWidget {
+  final Alimentos producto;
 
-  ItemDetailScreen({required this.product});
+  AgregarAlimentoVista({required this.producto});
 
   @override
-  _ItemDetailScreenState createState() => _ItemDetailScreenState();
+  _AgregarAlimentoVistaState createState() => _AgregarAlimentoVistaState();
 }
 
-class _ItemDetailScreenState extends State<ItemDetailScreen> {
+class _AgregarAlimentoVistaState extends State<AgregarAlimentoVista> {
   int unidades = 1;
-  final AlimentosViewModel viewModel = AlimentosViewModel();
+  final AlimentosViewModel _alimentosViewModel = AlimentosViewModel();
 
   @override
   Widget build(BuildContext context) {
-    USDAFood usdaFood = USDAFood(); // Instancia de la clase USDAFood
+    /// Llamada al provider para poder mantener la vista actualizada
+    final fechaSeleccionada =
+        Provider.of<SeleccionarFechaProvider>(context).seleccionarFecha;
 
-    double totalCalorias = double.parse((usdaFood.calcularCaloriasTotales([widget.product]) * unidades).toStringAsFixed(2));
-    double totalProteinas = double.parse((usdaFood.calcularTotalProteinas([widget.product]) * unidades).toStringAsFixed(2));
-    double totalGrasas = double.parse((usdaFood.calcularTotalGrasas([widget.product]) * unidades).toStringAsFixed(2));
-    double totalCarbohidratos = double.parse(usdaFood.calcularTotalCarbohidratos([widget.product]).toStringAsFixed(2));
+    /// Llamada al servico para calcular los valores nutricionales totales
+    double totalCalorias =
+        _alimentosViewModel.calcularTotalCalorias(widget.producto, unidades);
+
+    /// Llamada al servico para calcular las proteinas totales
+    double totalProteinas =
+        _alimentosViewModel.calcularTotalProteinas(widget.producto, unidades);
+
+    /// Llamada al servico para calcular las grasas totales
+    double totalGrasas =
+        _alimentosViewModel.calcularTotalGrasas(widget.producto, unidades);
+
+    /// Llamada al servico para calcular los carbohidratos
+    double totalCarbohidratos = _alimentosViewModel.calcularTotalCarbohidratos(
+        widget.producto, unidades);
 
     return Scaffold(
-      backgroundColor: Colors.green,
       appBar: AppBar(
         title: Text('Detalles del Alimento'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.green,
         elevation: 0.0,
         centerTitle: true,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(45.0),
-            topRight: Radius.circular(45.0),
-          ),
-          color: Colors.white,
-        ),
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Card(
                 elevation: 5.0,
@@ -58,13 +62,14 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                   children: [
                     ListTile(
                       title: Text(
-                        widget.product.description,
+                        widget.producto.descripcion,
                         style: TextStyle(
                             fontSize: 20.0, fontWeight: FontWeight.bold),
                       ),
                       subtitle: CircleAvatar(
-                        radius: 60.0,
-                        backgroundImage: AssetImage('assets/imagenes/comida.webp'),
+                        radius: 30.0,
+                        backgroundImage:
+                            AssetImage('assets/imagenes/comida.webp'),
                       ),
                     ),
                     Padding(
@@ -72,17 +77,17 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          TarjetaAlimentacion(
+                          TarjetaAlimentacionVista(
                             'Proteinas',
                             '$totalProteinas',
                             'g',
                           ),
-                          TarjetaAlimentacion(
+                          TarjetaAlimentacionVista(
                             'Carbohidratos',
                             '$totalCarbohidratos',
                             'g',
                           ),
-                          TarjetaAlimentacion(
+                          TarjetaAlimentacionVista(
                             'Grasas',
                             '$totalGrasas',
                             'g',
@@ -94,62 +99,104 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                 ),
               ),
               SizedBox(height: 20.0),
-              Expanded(
-                child: Card(
-                  elevation: 5.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TarjetaAlimentacion(
-                          'Total Calorías',
-                          '$totalCalorias',
-                          'kcal',
-                        ),
-                      ),
-                      Row(
+              Card(
+                elevation: 5.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          SizedBox(width: 10.0),
+                          TarjetaAlimentacionVista(
+                            'Total Calorías',
+                            '$totalCalorias',
+                            'kcal',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20.0),
+              Card(
+                elevation: 5.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Unidades: $unidades',
+                            style: TextStyle(fontSize: 18.0),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                unidades--;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.white,
+                              onPrimary: Colors.green,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.remove),
+                                SizedBox(width: 4),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 10.0),
                           ElevatedButton(
                             onPressed: () {
                               setState(() {
                                 unidades++;
                               });
                             },
-                            child: Text('Añadir unidad'),
-                          ),
-                          SizedBox(width: 10.0),
-                          ElevatedButton(
-                            onPressed: () {
-                              if (unidades > 1) {
-                                setState(() {
-                                  unidades--;
-                                });
-                              }
-                            },
-                            child: Text('Quitar unidad'),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.white,
+                              onPrimary: Colors.green,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.add),
+                                SizedBox(width: 4),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Unidades: $unidades',
-                          style: TextStyle(fontSize: 18.0),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 20.0),
+              SizedBox(height: 40.0),
               ElevatedButton(
                 onPressed: () async {
-                  await viewModel.agregarAlimentoAFirebase(
-                      widget.product, unidades);
+                  /// Llamada al servicio para almacenar el alimento en Firebase
+                  await _alimentosViewModel.agregarAlimentoAFirebase(
+                      widget.producto, unidades, fechaSeleccionada);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -165,9 +212,11 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.green,
+                  primary: Colors.white,
+                  onPrimary: Colors.green,
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25.0),
+                    borderRadius: BorderRadius.circular(30.0),
                   ),
                 ),
               ),

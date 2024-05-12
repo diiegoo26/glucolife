@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-class TarjetaAlimentacion extends StatelessWidget {
+class TarjetaAlimentacionVista extends StatelessWidget {
   final String title;
   final String value;
   final String unit;
 
-  TarjetaAlimentacion(this.title, this.value, this.unit);
+  TarjetaAlimentacionVista(this.title, this.value, this.unit);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.all(10.0),
+        padding: EdgeInsets.all(8.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15.0),
+          borderRadius: BorderRadius.circular(10.0),
           color: Colors.green[200],
           boxShadow: [
             BoxShadow(

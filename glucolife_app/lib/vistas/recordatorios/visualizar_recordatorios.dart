@@ -1,20 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:glucolife_app/provider/provider_fecha.dart';
-import 'package:glucolife_app/viewmodel/medicaciones_viewmodel.dart';
-import 'package:glucolife_app/vistas/medicacion/medicamentos.dart';
 import 'package:glucolife_app/vistas/recordatorios/agregar_recordatorio.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-
+import 'package:glucolife_app/vistas/recordatorios/tarjetaRecordatorio.dart';
 
 class VisualizarRecordatorios extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final selectedDateModel = Provider.of<SelectedDateModel>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Recordatorios'), // Mostrar la fecha seleccionada
+        title: Text('Recordatorios'),
         backgroundColor: Colors.green,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -27,7 +20,7 @@ class VisualizarRecordatorios extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: ListaRecordatorios(),
+            child: TarjetaRecordatorioVista(),
           ),
           SizedBox(
             height: 4,
@@ -44,64 +37,18 @@ class VisualizarRecordatorios extends StatelessWidget {
                 );
               },
               child: Text('Agregar recordatorio'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.white,
+                onPrimary: Colors.green,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class ListaRecordatorios extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('recordatorio')
-          .snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        // Si la consulta tiene éxito y hay datos disponibles
-        final recordatorios = snapshot.data!.docs;
-
-        return ListView.builder(
-          itemCount: recordatorios.length,
-          itemBuilder: (context, index) {
-            final recordatorio = recordatorios[index];
-            final descripcion = recordatorio['descripcion'];
-            final fecha = recordatorio['fecha'];
-            return Card(
-              elevation: 3,
-              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: ListTile(
-                title: Text(descripcion),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Fecha: $fecha'),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    // Llama a la función para eliminar el medicamento
-                    LocalNotifications.eliminar(context, recordatorio.id);
-                  },
-                ),
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }

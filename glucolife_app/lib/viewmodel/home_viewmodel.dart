@@ -1,80 +1,53 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:glucolife_app/servicios/HomeServicio.dart';
+import 'package:glucolife_app/servicios/LoginServicio.dart';
+import 'package:glucolife_app/vistas/welcome/welcome.dart';
 
 class HomeViewModel {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final HomeServicio _homeServicio = HomeServicio();
+  final LoginServicio _loginServicio = LoginServicio();
 
-  Future<void> guardarDatosGlucosa(double y1) async {
+  /// Guarda los datos de glucosa en Firebase.
+  ///
+  /// [valorLectura]: El valor de glucosa a guardar.
+  ///
+  /// Devuelve error cuando no se puede registrar las lecturas en Firebase
+  Future<void> guardarDatosGlucosa(double valorLectura) async {
     try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        await _firestore.collection('sensor').add({
-          'userId': user.uid,
-          'hora': DateTime.now(),
-          'valor': y1,
-        });
-      } else {
-        // Manejar el caso cuando el usuario no está autenticado
-        print('Usuario no autenticado');
-      }
+      await _homeServicio.guardarDatosGlucosa(valorLectura);
     } catch (e) {
-      print('Error al guardar datos en Firebase: $e');
-      // Manejar el error según tus necesidades
+      throw 'Error al guardar datos de glucosa: $e';
     }
   }
 
+  /// Obtiene el valor de hiperglucemia desde Firebase.
+  ///
+  /// Devuelve error cuando no se puede recuperar el valor de hiperglucemia
   Future<double> obtenerHiperglucemia() async {
     try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        DocumentSnapshot userSnapshot =
-        await _firestore.collection('usuarios').doc(user.uid).get();
-
-        // Verificar si el documento existe antes de intentar acceder al campo
-        if (userSnapshot.exists) {
-          // Obtener el valor del campo "hiperglucemia"
-          double hiperglucemia = userSnapshot.get('hiperglucemia');
-          // Hacer algo con el valor de "hiperglucemia", por ejemplo, imprimirlo
-          return hiperglucemia;
-        } else {
-          print('El documento no existe para el usuario actual');
-          return 0.0; // Otra acción o valor predeterminado según tu lógica
-        }
-      } else {
-        print('Usuario no autenticado');
-        return 0.0; // Otra acción o valor predeterminado según tu lógica
-      }
+      return await _homeServicio.obtenerHiperglucemia();
     } catch (e) {
       print('Error al obtener hiperglucemia: $e');
-      return 0.0; // Otra acción o valor predeterminado según tu lógica
+      return 0.0;
     }
   }
 
+  /// Obtiene el valor de hipoglucemia desde Firebase.
+  ///
+  /// Devuelve error cuando no se puede recuperar el valor de hipoglucemia
   Future<double> obtenerHipoglucemia() async {
     try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        DocumentSnapshot userSnapshot =
-        await _firestore.collection('usuarios').doc(user.uid).get();
-
-        // Verificar si el documento existe antes de intentar acceder al campo
-        if (userSnapshot.exists) {
-          // Obtener el valor del campo "hiperglucemia"
-          double hipoglucemia = userSnapshot.get('hipoglucemia');
-          // Hacer algo con el valor de "hiperglucemia", por ejemplo, imprimirlo
-          return hipoglucemia;
-        } else {
-          print('El documento no existe para el usuario actual');
-          return 0.0; // Otra acción o valor predeterminado según tu lógica
-        }
-      } else {
-        print('Usuario no autenticado');
-        return 0.0; // Otra acción o valor predeterminado según tu lógica
-      }
+      return await _homeServicio.obtenerHipoglucemia();
     } catch (e) {
-      print('Error al obtener hiperglucemia: $e');
-      return 0.0; // Otra acción o valor predeterminado según tu lógica
+      print('Error al obtener hipoglucemia: $e');
+      return 0.0;
     }
+  }
+
+  /// Cierra la sesión del usuario y redirige a la pantalla de bienvenida.
+  ///
+  /// [context]: El contexto de la aplicación.
+  Future<void> cerrarSesion(BuildContext context) async {
+    await _loginServicio.cerrarSesion();
   }
 }

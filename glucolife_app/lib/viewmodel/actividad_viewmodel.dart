@@ -1,97 +1,77 @@
-
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:glucolife_app/modelos/actividad.dart';
-import 'package:glucolife_app/servicios/WgerService.dart';
-import 'package:intl/intl.dart';
+import 'package:glucolife_app/servicios/ActividadServicio.dart';
+import 'package:glucolife_app/servicios/WgerServicio.dart';
 
 class ActividadViewModel extends ChangeNotifier {
-  final WgerService _exerciseService;
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  final ActividadServicio _actividadService = ActividadServicio();
+  final WgerService _wgerServicio = WgerService();
 
-  ActividadViewModel({
-    required WgerService exerciseService,
-    required FirebaseFirestore firestore,
-    required FirebaseAuth auth,
-  })  : _exerciseService = exerciseService,
-        _firestore = firestore,
-        _auth = auth;
+  List<Actividad> ejercicios = [];
+  List<Actividad> filtrar = [];
 
-  List<Actividad> exercises = [];
-  List<Actividad> filteredExercises = [];
-
-  Future<void> fetchExercises() async {
+  /// Obtiene las actividades desde el servicio Wger.
+  ///
+  /// Retorna una lista de las actividades encontradas
+  ///
+  /// Devuelve error cuando no se puede recuperar las actividades de la API Wger
+  Future<List<Actividad>> obtenerActividades() async {
     try {
-      exercises = await _exerciseService.fetchExercises();
-      filteredExercises = List.from(exercises);
+      ejercicios = await _wgerServicio.buscarActividad();
       notifyListeners();
+      return filtrar = List.from(ejercicios);
     } catch (error) {
-      print('Error: $error al recuperar ejercicios');
-      // Manejar el error según tus necesidades
+      throw 'Error al recuperar ejercicios: $error';
     }
   }
 
-  void filterExercises(String query) {
-    filteredExercises = exercises
+  /// Filtra las actividades por un término de búsqueda.
+  ///
+  /// [query]: Es el término de búsqueda para filtrar las actividades.
+  void filterejercicios(String query) {
+    filtrar = ejercicios
         .where((exercise) =>
         exercise.nombre.toLowerCase().contains(query.toLowerCase()))
         .toList();
     notifyListeners();
   }
 
-  Future<void> guardarActividadEnFirebase(Actividad ejercicio) async {
+  /// Guarda una actividad en Firebase.
+  ///
+  /// [ejercicio]: La actividad que se va a guardar.
+  ///
+  /// Devuelve error cuando no se puede almacenar la actividad en la base de datos
+  Future<void> guardarActividad(Actividad ejercicio,DateTime fechaSeleccionada) async {
     try {
-      double caloriasQuemadas =
-      _exerciseService.calcularCaloriasQuemadas([ejercicio]);
-
-      User? currentUser = _auth.currentUser;
-
-      if (currentUser != null) {
-        String uid = currentUser.uid;
-
-        CollectionReference actividadesCollection =
-        _firestore.collection('actividades');
-
-        await actividadesCollection.add({
-          'usuario': uid,
-          'nombre': ejercicio.nombre,
-          'tiempoRealizado': ejercicio.tiempoRealizado,
-          'intensidad': ejercicio.intensidad,
-          'caloriasQuemadas': ejercicio.caloriasQuemadas,
-          'fechaRegistro': DateFormat('yyyy-MM-dd').format(DateTime.now().toLocal()),
-        });
-
-        // Mensaje de éxito o realizar otras acciones después de almacenar en Firebase
-      } else {
-        print('Usuario no autenticado');
-        // Manejar el caso en el que no haya usuario autenticado según tus necesidades
-      }
+      await _actividadService.guardarActividadEnFirebase(ejercicio,fechaSeleccionada);
     } catch (error) {
-      print('Error: $error al almacenar en Firebase');
-      // Manejar el error según tus necesidades
+      throw 'Error al guardar la actividad: $error';
     }
   }
 
-  Future<void> eliminar(BuildContext context, String documentId) async {
+  /// Elimina una actividad de Firebase.
+  ///
+  /// [documentId]: El ID del documento de la actividad que se va a eliminar.
+  ///
+  /// Devuelve error cuando no se puede eliminar correctamente la actividad de Firebase
+  Future<void> eliminarActividad(String documentId) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('actividades')
-          .doc(documentId)
-          .delete();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Actividad eliminada con éxito'),
-        ),
-      );
+      await _actividadService.eliminarActividad(documentId);
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al eliminar la actividad'),
-        ),
-      );
+      throw 'Error al eliminar la actividad: $error';
     }
+  }
+
+  /// Calcula el total de calorías quemadas para una actividad.
+  ///
+  /// [tiempo]: El tiempo de duración de la actividad.
+  /// [intensidad]: La intensidad de la actividad.
+  ///
+  /// Retorna el total de calorías quemadas
+  double calcularTotalCaloriasQuemadas(
+      String tiempo, String intensidad) {
+    double totalCalorias =
+    _actividadService.calcularCaloriasQuemadas(tiempo, intensidad);
+    return double.parse(totalCalorias.toStringAsFixed(4));
   }
 }

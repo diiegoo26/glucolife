@@ -1,24 +1,22 @@
 import 'dart:async';
 import 'dart:math' as math;
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/viewmodel/home_viewmodel.dart';
 
-class LineChartSample10 extends StatefulWidget {
-  const LineChartSample10({Key? key}) : super(key: key);
+class LecturaActualVista extends StatefulWidget {
+  const LecturaActualVista({Key? key}) : super(key: key);
 
   @override
-  State<LineChartSample10> createState() => _LineChartSample10State();
+  State<LecturaActualVista> createState() => _LecturaActualVistaState();
 }
 
-class _LineChartSample10State extends State<LineChartSample10> {
-  final limitCount = 100;
+class _LecturaActualVistaState extends State<LecturaActualVista> {
   final sinPoints = <FlSpot>[];
   final cosPoints = <FlSpot>[];
 
   double xValue = 0;
-  double step = 0.05;
+  final double step = 0.1;
 
   late Timer addDataTimer;
   late Timer clearDataTimer;
@@ -28,36 +26,32 @@ class _LineChartSample10State extends State<LineChartSample10> {
   double hiperglucemiaLimite = 60.0;
   double hipoglucemiaLimite = 160.0;
 
-  // Establecer el límite deseado
 
 
   @override
   void initState() {
     super.initState();
-
+    /// Llamada al metodo para obtner el valor de hiperglucemia
     _homeViewModel.obtenerHiperglucemia().then((double hiperglucemia) {
-      // Establecer el límite de hiperglucemia
       hiperglucemiaLimite = hiperglucemia;
     });
-
+    /// Llamada al metodo para obtner el valor de hipoglucemia
     _homeViewModel.obtenerHipoglucemia().then((double hipoglucemia) {
-      // Establecer el límite de hiperglucemia
       hipoglucemiaLimite = hipoglucemia;
     });
 
-    // Timer para agregar nuevos valores cada 2 segundos
     addDataTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       setState(() {
-        double randomValue = math.Random().nextInt(151) + 50;
-        double randomValue1 = math.Random().nextInt(151) + 50;
-        _homeViewModel.guardarDatosGlucosa(randomValue);
-        sinPoints.add(FlSpot(xValue, randomValue));
-        cosPoints.add(FlSpot(xValue, randomValue1));
+        double actual = math.Random().nextDouble() * 100 + 50;
+        double ideal = actual + (math.Random().nextDouble() * 20 - 10);
+        /// Llamada al metodo para almacenar los datos en Firebase
+        _homeViewModel.guardarDatosGlucosa(actual);
+        sinPoints.add(FlSpot(xValue, actual));
+        cosPoints.add(FlSpot(xValue, ideal));
       });
       xValue += step;
     });
 
-    // Timer para limpiar datos cada 60 segundos
     clearDataTimer = Timer.periodic(const Duration(seconds: 60), (timer) {
       setState(() {
         sinPoints.clear();
@@ -78,7 +72,7 @@ class _LineChartSample10State extends State<LineChartSample10> {
           'Nivel actual: ${sinPoints.last.y.toStringAsFixed(1)}',
           style: TextStyle(
             color: Colors.blue,
-            fontSize: 18,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -86,7 +80,23 @@ class _LineChartSample10State extends State<LineChartSample10> {
           'Nivel ideal: ${cosPoints.last.y.toStringAsFixed(1)}',
           style: TextStyle(
             color: Colors.pink,
-            fontSize: 18,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          'Valor de hiperglucemia: ${hiperglucemiaLimite}',
+          style: TextStyle(
+            color: Colors.black54,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          'Valor de hipoglucemia: ${hipoglucemiaLimite}',
+          style: TextStyle(
+            color: Colors.black54,
+            fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -113,8 +123,8 @@ class _LineChartSample10State extends State<LineChartSample10> {
                   ),
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
-                    sinLine(sinPoints),
-                    cosLine(cosPoints),
+                    valor_real(sinPoints),
+                    valor_ideal(cosPoints),
                   ],
                   titlesData: const FlTitlesData(
                     show: false,
@@ -129,7 +139,7 @@ class _LineChartSample10State extends State<LineChartSample10> {
         : Container();
   }
 
-  LineChartBarData sinLine(List<FlSpot> points) {
+  LineChartBarData valor_real(List<FlSpot> points) {
     return LineChartBarData(
       spots: points,
       dotData: const FlDotData(
@@ -146,7 +156,7 @@ class _LineChartSample10State extends State<LineChartSample10> {
     );
   }
 
-  LineChartBarData cosLine(List<FlSpot> points) {
+  LineChartBarData valor_ideal(List<FlSpot> points) {
     return LineChartBarData(
       spots: points,
       dotData: const FlDotData(
@@ -162,7 +172,8 @@ class _LineChartSample10State extends State<LineChartSample10> {
       aboveBarData: BarAreaData(show: false),
     );
   }
-
+  
+  /// Permite cambiar el fondo de color cuando el usuario se encuentra en estado de hiperglucemia o hipoglucemia
   Color _getBackgroundColor() {
     if (sinPoints.isEmpty) {
       return Colors.transparent;
@@ -180,20 +191,18 @@ class _LineChartSample10State extends State<LineChartSample10> {
       case double.nan:
         return Colors.transparent;
       default:
-        if (lastY <= hiperglucemiaLimite && lastY >= 0) {
+        if (lastY >= hiperglucemiaLimite && lastY >= 0) {
           return Colors.red.withOpacity(0.5);
-        } else if (lastY >= hipoglucemiaLimite) {
+        } else if (lastY <= hipoglucemiaLimite) {
           return Colors.red.withOpacity(0.5);
-        } else if(lastY>=hiperglucemiaLimite && lastY<=hipoglucemiaLimite){
+        } else if(lastY<=hiperglucemiaLimite && lastY>=hipoglucemiaLimite){
           return Colors.green.withOpacity(0.5);
-          return Colors.transparent;
         }else{
           return Colors.transparent;
         }
     }
   }
-
-
+  
   @override
   void dispose() {
     addDataTimer.cancel();

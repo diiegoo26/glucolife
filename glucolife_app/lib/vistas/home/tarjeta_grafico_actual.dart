@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:glucolife_app/vistas/home/actividad_home.dart';
 import 'package:glucolife_app/vistas/home/grafica_actual.dart';
 
-class TarjetaGrafico extends StatelessWidget {
+class TarjetaGraficoActualVista extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -22,7 +20,7 @@ class TarjetaGrafico extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            LineChartSample10(),
+            LecturaActualVista(),
           ],
         ),
       ),

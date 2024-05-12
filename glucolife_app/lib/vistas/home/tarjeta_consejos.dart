@@ -1,19 +1,17 @@
-import 'dart:convert';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:glucolife_app/main.dart';
+import 'package:glucolife_app/claves.dart';
 import 'package:glucolife_app/provider/provider_usuario.dart';
 import 'package:google_gemini/google_gemini.dart';
 import 'package:provider/provider.dart';
 
-class TarjetaConsejo extends StatefulWidget {
-  const TarjetaConsejo({Key? key}) : super(key: key);
+class TarjetaConsejoVista extends StatefulWidget {
+  const TarjetaConsejoVista({Key? key}) : super(key: key);
 
   @override
-  State<TarjetaConsejo> createState() => _TarjetaConsejoState();
+  State<TarjetaConsejoVista> createState() => _TarjetaConsejoVistaState();
 }
 
-class _TarjetaConsejoState extends State<TarjetaConsejo>{
+class _TarjetaConsejoVistaState extends State<TarjetaConsejoVista> {
   final TextEditingController _textController = TextEditingController();
 
   bool loading = false;
@@ -21,17 +19,18 @@ class _TarjetaConsejoState extends State<TarjetaConsejo>{
 
   final ScrollController _controller = ScrollController();
 
-  final gemini = GoogleGemini(apiKey: apiKey);
+  final gemini = GoogleGemini(apiKey: Claves.GeminiKey);
 
   void fromText({required String query}) {
-    final usuarioModel = Provider.of<UserData>(context, listen: false);
+    /// Llamada al provider para poder mantener la vista actualizada
+    final usuarioModel = Provider.of<UsuarioProvider>(context, listen: false);
     setState(() {
       loading = true;
       textChat.add({
-        "role": usuarioModel.usuario?.nombre ?? "Usuario",
+        "role": usuarioModel.obtenerUsuario?.nombre ?? "Usuario",
         "text": query,
       });
-      _textController.clear(); // Borrar el texto del TextField
+      _textController.clear();
     });
     scrollToTheEnd();
 
@@ -50,8 +49,6 @@ class _TarjetaConsejoState extends State<TarjetaConsejo>{
     });
   }
 
-
-
   void scrollToTheEnd() {
     _controller.jumpTo(_controller.position.maxScrollExtent);
   }
@@ -62,7 +59,7 @@ class _TarjetaConsejoState extends State<TarjetaConsejo>{
       elevation: 4,
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Container(
-        height: 300, // Establecer una altura fija
+        height: 300,
         child: Padding(
           padding: EdgeInsets.all(16),
           child: Column(
@@ -108,7 +105,8 @@ class _TarjetaConsejoState extends State<TarjetaConsejo>{
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 26),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 17, vertical: 26),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -118,7 +116,10 @@ class _TarjetaConsejoState extends State<TarjetaConsejo>{
                         minLines: 1,
                         maxLines: null,
                         keyboardType: TextInputType.multiline,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontSize: 14),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium!
+                            .copyWith(fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'Pregúntale a Samantha tus dudas...',
                           contentPadding: const EdgeInsets.only(
@@ -126,7 +127,10 @@ class _TarjetaConsejoState extends State<TarjetaConsejo>{
                             top: 10,
                             bottom: 10,
                           ),
-                          hintStyle: Theme.of(context).textTheme.bodySmall!.copyWith(height: 0),
+                          hintStyle: Theme.of(context)
+                              .textTheme
+                              .bodySmall!
+                              .copyWith(height: 0),
                           filled: true,
                           border: OutlineInputBorder(
                             borderSide: BorderSide.none,
@@ -137,17 +141,17 @@ class _TarjetaConsejoState extends State<TarjetaConsejo>{
                             child: loading
                                 ? const CircularProgressIndicator()
                                 : InkWell(
-                              onTap: () {
-                                fromText(query: _textController.text);
-                              },
-                              child: const CircleAvatar(
-                                backgroundColor: Colors.green,
-                                child: Icon(
-                                  Icons.send,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                                    onTap: () {
+                                      fromText(query: _textController.text);
+                                    },
+                                    child: const CircleAvatar(
+                                      backgroundColor: Colors.green,
+                                      child: Icon(
+                                        Icons.send,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
                           ),
                         ),
                         onChanged: (value) {},

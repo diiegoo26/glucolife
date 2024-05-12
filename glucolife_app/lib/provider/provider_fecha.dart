@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 
-class SelectedDateModel extends ChangeNotifier {
-  DateTime _selectedDate = DateTime.now();
+/// Provider para notificar la seleccion de la fecha en el calendario
+class SeleccionarFechaProvider extends ChangeNotifier {
+  /// Fecha seleccionada.
+  DateTime _seleccionarFehca = DateTime.now();
 
-  DateTime get selectedDate => _selectedDate;
+  /// Obtiene la fecha seleccionada.
+  DateTime get seleccionarFecha => _seleccionarFehca;
 
-  void updateSelectedDate(DateTime newDate) {
-    _selectedDate = newDate;
+  /// Actualiza la fecha seleccionada y notifica a los listeners.
+  ///
+  /// [fechaSeleccionada]: Nueva fecha seleccionada.
+  void actualizarFecha(DateTime fechaSeleccionada) {
+    _seleccionarFehca = fechaSeleccionada;
     notifyListeners();
   }
 }
+
 

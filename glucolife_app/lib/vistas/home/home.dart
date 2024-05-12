@@ -1,10 +1,9 @@
 import 'package:animated_floating_buttons/animated_floating_buttons.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/provider/provider_fecha.dart';
 import 'package:glucolife_app/provider/provider_usuario.dart';
-import 'package:glucolife_app/viewmodel/alimentos_viewmodel.dart';
+import 'package:glucolife_app/viewmodel/home_viewmodel.dart';
 import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:glucolife_app/vistas/ajustes/ajustes.dart';
 import 'package:glucolife_app/vistas/alimentacion/visualizacion_datos.dart';
@@ -15,25 +14,26 @@ import 'package:glucolife_app/vistas/home/tarjeta_consejos.dart';
 import 'package:glucolife_app/vistas/home/tarjeta_grafico_actual.dart';
 import 'package:glucolife_app/vistas/home/tarjeta_grafico_no_actual.dart';
 import 'package:glucolife_app/vistas/medicacion/visualizar_medicamentos.dart';
-import 'package:glucolife_app/vistas/recordatorios/agregar_recordatorio.dart';
 import 'package:glucolife_app/vistas/recordatorios/visualizar_recordatorios.dart';
 import 'package:glucolife_app/vistas/welcome/welcome.dart';
 import 'package:horizontal_calendar/horizontal_calendar.dart';
 import 'package:provider/provider.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeVista extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _HomeVistaState createState() => _HomeVistaState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final LoginViewModel _viewModel = LoginViewModel();
+class _HomeVistaState extends State<HomeVista> {
+  final LoginViewModel _loginViewModel = LoginViewModel();
+  final HomeViewModel _homeViewModel = HomeViewModel();
   final GlobalKey<AnimatedFloatingActionButtonState> key =
   GlobalKey<AnimatedFloatingActionButtonState>();
-  DateTime selectedDate = DateTime.now();
-  bool showChart = true; // Flag to control chart visibility
+  DateTime seleccionaFecha = DateTime.now();
+  bool showChart = true;
 
   @override
+  /// Inicializacion de las llamadas a los servicios
   void initState() {
     super.initState();
     _obtenerUsuarioActual();
@@ -41,7 +41,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedDateModel = Provider.of<SelectedDateModel>(context);
+    /// Llamada al provider para poder mantener la vista actualizada
+    final seleccionaFechaModel = Provider.of<SeleccionarFechaProvider>(context);
+    seleccionaFecha = seleccionaFechaModel.seleccionarFecha;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -51,17 +53,17 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Scaffold.of(context).openDrawer();
             },
-            child: Consumer<UserData>(
+            child: Consumer<UsuarioProvider>(
               builder: (context, usuarioModel, child) {
                 return Row(
                   children: [
                     CircleAvatar(
                       radius: 20.0,
                       backgroundImage:
-                      NetworkImage(usuarioModel.usuario?.imagenUrl ?? "https://cdn-icons-png.flaticon.com/512/3135/3135768.png")
+                      NetworkImage(usuarioModel.obtenerUsuario?.imagenUrl ?? "https://cdn-icons-png.flaticon.com/512/3135/3135768.png")
                     ),
                     SizedBox(width: 8),
-                    Text('Bienvenido, ${usuarioModel.usuario?.nombre ?? "Usuario"}'),
+                    Text('Bienvenido, ${usuarioModel.obtenerUsuario?.nombre ?? "Usuario"}'),
                   ],
                 );
               },
@@ -74,28 +76,29 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             HorizontalCalendar(
-              date: selectedDate,
+              date: seleccionaFecha,
               initialDate: DateTime(2000),
               textColor: Colors.black,
               backgroundColor: Colors.white,
               selectedColor: Colors.green,
               showMonth: true,
               locale: Localizations.localeOf(context),
+              lastDate: DateTime.now(),
               onDateSelected: (date) {
                 setState(() {
-                  selectedDate = date;
+                  seleccionaFecha = date;
                   // Check if the selected date is the current date
-                  showChart = selectedDate.year == DateTime.now().year &&
-                      selectedDate.month == DateTime.now().month &&
-                      selectedDate.day == DateTime.now().day;
+                  showChart = seleccionaFecha.year == DateTime.now().year &&
+                      seleccionaFecha.month == DateTime.now().month &&
+                      seleccionaFecha.day == DateTime.now().day;
                 });
-                selectedDateModel.updateSelectedDate(date);
+                seleccionaFechaModel.actualizarFecha(date);
               },
             ),
             SizedBox(height: 20),
-            if (showChart) TarjetaGrafico()
+            if (showChart) TarjetaGraficoActualVista()
             else
-              TarjetaGraficoNoActual(),
+              TarjetaGraficoNoActualVista(),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -103,19 +106,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialPageRoute(builder: (context) => VisualizarActividad()),
                 );
               },
-              child: TarjetaActividadHome(),
+              child: TarjetaActividadHomeVista(),
             ),
             GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => VisualizarAlimentos()),  // Reemplaza DetalleVista con el nombre de tu vista de destino
+                      builder: (context) => VisualizarAlimentos()),
                 );
               },
-              child: TarjetaAlimentacionHome(),
+              child: TarjetaAlimentosHomeVista(),
             ),
-            TarjetaConsejo(),
+            TarjetaConsejoVista(),
           ],
         ),
       ),
@@ -130,15 +133,15 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Consumer<UserData>(
+                  Consumer<UsuarioProvider>(
                     builder: (context, usuarioModel, child) {
                       return ListTile(
                         leading: CircleAvatar(
                           radius: 30.0,
-                          backgroundImage: NetworkImage(usuarioModel.usuario?.imagenUrl ?? "https://cdn-icons-png.flaticon.com/512/3135/3135768.png"),
+                          backgroundImage: NetworkImage(usuarioModel.obtenerUsuario?.imagenUrl ?? "https://cdn-icons-png.flaticon.com/512/3135/3135768.png"),
                         ),
                         title: Text(
-                          '${usuarioModel.usuario?.nombre ?? "Usuario"} ${usuarioModel.usuario?.apellidos??"Apellidos"}',
+                          '${usuarioModel.obtenerUsuario?.nombre ?? "Usuario"} ${usuarioModel.obtenerUsuario?.apellidos??"Apellidos"}',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18.0,
@@ -156,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Ajustes()),
+                  MaterialPageRoute(builder: (context) => AjustesVitsa()),
                 );
               },
             ),
@@ -213,10 +216,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Llamada al servicio para obtener los datos del usuario logueado
   void _obtenerUsuarioActual() async {
     try {
-      Usuario? usuario = await _viewModel.obtenerUsuarioActual();
-      Provider.of<UserData>(context, listen: false).actualizarUsuario(usuario!);
+      Usuario? usuario = await _loginViewModel.obtenerUsuarioActual();
+      Provider.of<UsuarioProvider>(context, listen: false).actualizarUsuario(usuario!);
     } catch (error) {
       print('Error al obtener el usuario: $error');
     }
@@ -242,10 +246,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             TextButton(
               onPressed: () {
-                FirebaseAuth.instance.signOut();
+                /// Llamada al metodo para cerrar sesion
+                _homeViewModel.cerrarSesion(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                  MaterialPageRoute(builder: (context) => BienvenidaVista()),
                 );
               },
               child: Text('Cerrar Sesión'),

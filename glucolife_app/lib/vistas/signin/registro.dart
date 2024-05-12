@@ -8,17 +8,16 @@ import 'package:glucolife_app/vistas/home/home.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-class RegistrationForm extends StatefulWidget {
+class RegistroVista extends StatefulWidget {
   @override
-  _RegistrationFormState createState() => _RegistrationFormState();
+  _RegistroVistaState createState() => _RegistroVistaState();
 }
 
-class _RegistrationFormState extends State<RegistrationForm> {
+class _RegistroVistaState extends State<RegistroVista> {
   int _currentStep = 0;
   String? _imagePath;
-  RegistroViewModel _viewModel = RegistroViewModel();
+  RegistroViewModel _registroViewModel = RegistroViewModel();
 
-  // Campos de entrada para cada sección
   TextEditingController _nombreController = TextEditingController();
   TextEditingController _apellidosController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
@@ -64,6 +63,49 @@ class _RegistrationFormState extends State<RegistrationForm> {
         type: StepperType.horizontal,
         currentStep: _currentStep,
         onStepContinue: () async {
+          /// Llamada al servicio para comprobar que el formato del correo es el correcto
+          bool formatoInvalido = _registroViewModel.verificarFormatoCorreo(_emailController.text);
+          /// Llamada al servicio para comprobar que el formato de la contraseña es el correcto
+          bool passIncorrecta = _registroViewModel.verificarFormatoPass(_passController.text);
+          if (!formatoInvalido) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Correo electrónico inválido'),
+                  content: Text('Por favor, ingrese un correo electrónico válido.'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Cerrar'),
+                    ),
+                  ],
+                );
+              },
+            );
+            return;
+          }else if (!passIncorrecta) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Contraseña incorrecta'),
+                  content: Text('Por favor, ingrese una contraseña válida.'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('Cerrar'),
+                    ),
+                  ],
+                );
+              },
+            );
+            return;
+          }
           if (_currentStep < 2) {
             setState(() {
               _currentStep += 1;
@@ -79,18 +121,18 @@ class _RegistrationFormState extends State<RegistrationForm> {
               altura: double.parse(_alturaController.text),
               peso: double.parse(_pesoController.text),
               unidadComida: selectedUnidadComida,
-              unidad: selectedUnidad,
+              unidadMedida: selectedUnidad,
               hiperglucemia: double.parse(_hiperController.text),
               hipoglucemia: double.parse(_hipoController.text),
-              objetivo: double.parse(_objetivoController.text),
+              nivel_objetivo: double.parse(_objetivoController.text),
               imagenUrl: _imagePath!,
             );
 
-
-            await _viewModel.registerUser(user,_imagePath!);
+            /// Llamada al servicio para almacenar al usuario en Firebase
+            await _registroViewModel.registrarUsuario(user,_imagePath!);
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
+              MaterialPageRoute(builder: (context) => HomeVista()),
             );
             print('Formulario enviado y usuario registrado en Firebase!');
           }
@@ -127,13 +169,21 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     fit: BoxFit.cover,
                   ),
                 )
-                    : Container(), // Un contenedor vacío si no hay imagen seleccionada
+                    : Container(),
                 SizedBox(height: 10.0),
                 ElevatedButton(
                   onPressed: () {
                     _pickImage();
                   },
                   child: Text('Seleccionar Imagen'),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.white,
+                    onPrimary: Colors.green,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -153,18 +203,76 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 ),
                 SizedBox(height: 10.0),
                 Text('Correo Electrónico'),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                      labelText: 'Ingrese su correo electrónico'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Ingrese su correo electrónico',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.info_outline),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Formato de Correo Electrónico'),
+                              content: Text('El formato del correo electrónico debe ser correo@ejemplo.com'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Cerrar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
+
                 SizedBox(height: 10.0),
                 Text('Contraseña'),
-                TextFormField(
-                  controller: _passController,
-                  obscureText: true,
-                  decoration:
-                      InputDecoration(labelText: 'Ingrese su contraseña'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _passController,
+                        decoration: InputDecoration(
+                          labelText: 'Ingrese su contraseña',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.info_outline),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Formato de la contraseña'),
+                              content: Text('Debe contener al menos 7 caracteres, incluyendo una letra minúscula, una letra mayúscula, un número y un carácter especial.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Cerrar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 SizedBox(height: 10.0),
                 Text('Fecha de Nacimiento'),
@@ -203,20 +311,62 @@ class _RegistrationFormState extends State<RegistrationForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Nivel de Actividad'),
-                DropdownButton<String>(
-                  value: selectedNivelActividad,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedNivelActividad = newValue!;
-                    });
-                  },
-                  items: opcionesNivelActividad
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[400]!),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: PopupMenuTheme(
+                    data: PopupMenuThemeData(
+                      color: Colors.grey[200],
+                    ),
+                    child: DropdownButton<String>(
+                      value: selectedNivelActividad,
+                      items: opcionesNivelActividad.map((String actividad) {
+                        return DropdownMenuItem<String>(
+                          value: actividad,
+                          child: Text(
+                            actividad,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedNivelActividad = value!;
+                        });
+                      },
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      icon: Icon(Icons.arrow_drop_down),
+                      iconSize: 32,
+                      elevation: 16,
+                      underline: Container(
+                        height: 0,
+                        color: Colors.transparent,
+                      ),
+                      isExpanded: true,
+                      dropdownColor: Colors.grey[200],
+                      selectedItemBuilder: (BuildContext context) {
+                        return opcionesNivelActividad.map<Widget>((String actividad) {
+                          return Center(
+                            child: Text(
+                              selectedNivelActividad,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
                 ),
                 SizedBox(height: 10.0),
                 Text('Altura'),
@@ -245,60 +395,229 @@ class _RegistrationFormState extends State<RegistrationForm> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Seleccion de unidades de medida para los alimentos'),
-                DropdownButton<String>(
-                  value: selectedUnidadComida,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedUnidadComida = newValue!;
-                    });
-                  },
-                  items: opcionesMedicionesComida
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[400]!),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: PopupMenuTheme(
+                    data: PopupMenuThemeData(
+                      color: Colors.grey[200],
+                    ),
+                    child: DropdownButton<String>(
+                      value: selectedUnidadComida,
+                      items: opcionesMedicionesComida.map((String comida) {
+                        return DropdownMenuItem<String>(
+                          value: comida,
+                          child: Text(
+                            comida,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedUnidadComida = value!;
+                        });
+                      },
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      icon: Icon(Icons.arrow_drop_down),
+                      iconSize: 32,
+                      elevation: 16,
+                      underline: Container(
+                        height: 0,
+                        color: Colors.transparent,
+                      ),
+                      isExpanded: true,
+                      dropdownColor: Colors.grey[200],
+                      selectedItemBuilder: (BuildContext context) {
+                        return opcionesMedicionesComida.map<Widget>((String comida) {
+                          return Center(
+                            child: Text(
+                              selectedUnidadComida,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
                 ),
                 Text('Seleccion de unidades de medida de las lecturas'),
-                DropdownButton<String>(
-                  value: selectedUnidad,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedUnidad = newValue!;
-                    });
-                  },
-                  items: opcionesMedicionesUnidad
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey[400]!),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: PopupMenuTheme(
+                    data: PopupMenuThemeData(
+                      color: Colors.grey[200],
+                    ),
+                    child: DropdownButton<String>(
+                      value: selectedUnidad,
+                      items: opcionesMedicionesUnidad.map((String unidad) {
+                        return DropdownMenuItem<String>(
+                          value: unidad,
+                          child: Text(
+                            unidad,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedUnidad = value!;
+                        });
+                      },
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      icon: Icon(Icons.arrow_drop_down),
+                      iconSize: 32,
+                      elevation: 16,
+                      underline: Container(
+                        height: 0,
+                        color: Colors.transparent,
+                      ),
+                      isExpanded: true,
+                      dropdownColor: Colors.grey[200],
+                      selectedItemBuilder: (BuildContext context) {
+                        return opcionesMedicionesComida.map<Widget>((String unidad) {
+                          return Center(
+                            child: Text(
+                              selectedUnidad,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
                 ),
                 SizedBox(height: 10.0),
                 Text('Hiperglucemia'),
-                TextFormField(
-                  controller: _hiperController,
-                  decoration: InputDecoration(
-                      labelText: 'Ingrese el nivel de hiperglucemia'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _hiperController,
+                        decoration: InputDecoration(
+                          labelText: 'Ingrese el valor numerico de hiperglucemia',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.info_outline),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Informacion'),
+                              content: Text('La hiperglucemia es un término médico que se refiere a niveles elevados de glucosa en la sangre.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Cerrar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 SizedBox(height: 10.0),
                 Text('Hipoglucemia'),
-                TextFormField(
-                  controller: _hipoController,
-                  decoration: InputDecoration(
-                      labelText: 'Ingrese su nivel de hipoglucemia'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _hipoController,
+                        decoration: InputDecoration(
+                          labelText: 'Ingrese el valor numerico de hipoglucemia',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.info_outline),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Informacion'),
+                              content: Text('La hipoglucemia es un término médico que se refiere a niveles bajos de glucosa en la sangre.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Cerrar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 SizedBox(height: 10.0),
-                Text('Objetivo'),
-                TextFormField(
-                  controller: _objetivoController,
-                  decoration: InputDecoration(
-                      labelText: 'Ingrese su nivel a conseguir'),
+                Text('Valor ideal'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _objetivoController,
+                        decoration: InputDecoration(
+                          labelText: 'Ingrese el valor numerico de su nivel ideal de glucosa ',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.info_outline),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Informacion'),
+                              content: Text('Con este valor se considerará que el usuario posee un nivel de glucosa bueno.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Cerrar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                SizedBox(height: 10.0),
-                SizedBox(height: 10.0),
               ],
             ),
           ),

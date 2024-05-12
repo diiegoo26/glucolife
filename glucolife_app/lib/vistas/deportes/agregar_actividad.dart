@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/actividad.dart';
-import 'package:glucolife_app/modelos/usuario.dart';
+import 'package:glucolife_app/provider/provider_fecha.dart';
 import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
-import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/visualizar_actividad.dart';
 import 'package:provider/provider.dart';
 
-class ExerciseDetailScreen extends StatefulWidget {
+class AgregarActividadVista extends StatefulWidget {
   final Actividad ejercicio;
 
-  ExerciseDetailScreen({required this.ejercicio});
-
+  AgregarActividadVista({required this.ejercicio});
   @override
-  _ExerciseDetailScreenState createState() => _ExerciseDetailScreenState();
+  _AgregarActividadVistaState createState() => _AgregarActividadVistaState();
 }
 
-class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
+class _AgregarActividadVistaState extends State<AgregarActividadVista> {
   late String _selectedTiempo;
   late String _selectedIntensidad;
   double _caloriasQuemadas = 0.0;
+
+  final ActividadViewModel _actividadViewModel = ActividadViewModel();
 
   List<String> intensidades = ['Baja', 'Moderada', 'Alta'];
   List<String> tiempos = [
     '15 min',
     '30 min',
     '45 min',
-    '1 hora',
-    '1.5 horas',
-    '2 horas'
+    '60 min',
+    '90 min',
+    '120 horas'
   ];
 
   @override
@@ -45,27 +45,10 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
     }
   }
 
-  double calcularCaloriasQuemadas(String tiempo, String intensidad, double peso, double altura) {
-    double factorIntensidad = intensidad == 'Alta' ? 2.0 : (intensidad == 'Moderada' ? 1.5 : 1.0);
-    double tiempoRealizado = double.tryParse(tiempo.split(' ')[0]) ?? 0.0;
-
-    // Fórmula de Harris-Benedict para el metabolismo basal (MB)
-    double mb = 66.5 + (13.75 * peso) + (5.003 * altura) - (6.75 * 25); // En hombres
-    // Para mujeres, el cálculo sería ligeramente diferente
-
-    // Calorías quemadas por minuto
-    double caloriasPorMinuto = mb / tiempoRealizado; // 1440 es el número de minutos en un día
-
-    // Calorías quemadas durante el ejercicio
-    double caloriasQuemadas = caloriasPorMinuto * tiempoRealizado * factorIntensidad;
-
-    return caloriasQuemadas;
-  }
-
-
+  /// Llamada al servicio para calcular las calorias consumidas
   void calcularYMostrarCalorias() {
-    double caloriasQuemadas =
-    calcularCaloriasQuemadas(_selectedTiempo, _selectedIntensidad,98,180);
+    double caloriasQuemadas = _actividadViewModel.calcularTotalCaloriasQuemadas(
+        _selectedTiempo, _selectedIntensidad);
     setState(() {
       _caloriasQuemadas = caloriasQuemadas;
     });
@@ -73,6 +56,9 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    /// Llamada al provider para poder mantener la vista actualizada
+    final fechaSeleccionada =
+        Provider.of<SeleccionarFechaProvider>(context).seleccionarFecha;
     return Scaffold(
       appBar: AppBar(
         title: Text('Detalles del Ejercicio'),
@@ -98,19 +84,62 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            DropdownButton<String>(
-              value: _selectedTiempo,
-              items: tiempos.map((String tiempo) {
-                return DropdownMenuItem<String>(
-                  value: tiempo,
-                  child: Text(tiempo),
-                );
-              }).toList(),
-              onChanged: (String? value) {
-                setState(() {
-                  _selectedTiempo = value!;
-                });
-              },
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[400]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: PopupMenuTheme(
+                data: PopupMenuThemeData(
+                  color: Colors.grey[200],
+                ),
+                child: DropdownButton<String>(
+                  value: _selectedTiempo,
+                  items: tiempos.map((String tiempo) {
+                    return DropdownMenuItem<String>(
+                      value: tiempo,
+                      child: Text(
+                        tiempo,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _selectedTiempo = value!;
+                    });
+                  },
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  icon: Icon(Icons.arrow_drop_down),
+                  iconSize: 32,
+                  elevation: 16,
+                  underline: Container(
+                    height: 0,
+                    color: Colors.transparent,
+                  ),
+                  isExpanded: true,
+                  dropdownColor: Colors.grey[200],
+                  selectedItemBuilder: (BuildContext context) {
+                    return tiempos.map<Widget>((String tiempo) {
+                      return Center(
+                        child: Text(
+                          _selectedTiempo,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
+                ),
+              ),
             ),
             SizedBox(height: 24),
             Text(
@@ -118,27 +147,73 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            DropdownButton<String>(
-              value: _selectedIntensidad,
-              items: intensidades.map((String intensidad) {
-                return DropdownMenuItem<String>(
-                  value: intensidad,
-                  child: Text(intensidad),
-                );
-              }).toList(),
-              onChanged: (String? value) {
-                setState(() {
-                  _selectedIntensidad = value!;
-                });
-              },
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[400]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: PopupMenuTheme(
+                data: PopupMenuThemeData(
+                  color: Colors.grey[200],
+                ),
+                child: DropdownButton<String>(
+                  value: _selectedIntensidad,
+                  items: intensidades.map((String intensidad) {
+                    return DropdownMenuItem<String>(
+                      value: intensidad,
+                      child: Text(
+                        intensidad,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      _selectedIntensidad = value!;
+                    });
+                  },
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  icon: Icon(Icons.arrow_drop_down),
+                  iconSize: 32,
+                  elevation: 16,
+                  underline: Container(
+                    height: 0,
+                    color: Colors.transparent,
+                  ),
+                  isExpanded: true,
+                  dropdownColor: Colors.grey[200],
+                  selectedItemBuilder: (BuildContext context) {
+                    return intensidades.map<Widget>((String intensidad) {
+                      return Center(
+                        child: Text(
+                          _selectedIntensidad,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
+                      );
+                    }).toList();
+                  },
+                ),
+              ),
             ),
             SizedBox(height: 32),
             ElevatedButton(
               onPressed: calcularYMostrarCalorias,
-              child: Text('Calcular Calorías'),
+              child: Text('Calcular Calorías Quemadas'),
               style: ElevatedButton.styleFrom(
                 primary: Colors.green,
                 onPrimary: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
               ),
             ),
             SizedBox(height: 24),
@@ -155,9 +230,9 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                   widget.ejercicio.caloriasQuemadas = _caloriasQuemadas;
                 });
 
-                // Llamar al método para guardar cambios en Firebase
+                /// Llamada al servicio para almacenar la actividad en Firebase
                 await Provider.of<ActividadViewModel>(context, listen: false)
-                    .guardarActividadEnFirebase(widget.ejercicio);
+                    .guardarActividad(widget.ejercicio, fechaSeleccionada);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -165,10 +240,14 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
                   ),
                 );
               },
-              child: Text('Guardar Cambios'),
+              child: Text('Agregar actividad física'),
               style: ElevatedButton.styleFrom(
-                primary: Colors.green,
-                onPrimary: Colors.white,
+                primary: Colors.white,
+                onPrimary: Colors.green,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
               ),
             ),
           ],

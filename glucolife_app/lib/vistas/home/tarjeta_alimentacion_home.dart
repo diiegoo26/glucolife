@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/vistas/home/alimentos_home.dart';
 
-class TarjetaAlimentacionHome extends StatelessWidget {
+class TarjetaAlimentosHomeVista
+ extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -29,7 +30,7 @@ class TarjetaAlimentacionHome extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
-            CaloriasConsumidas()
+            CaloriasConsumidasVista()
           ]
         ),
       ),

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/alimentos.dart';
-import 'package:glucolife_app/servicios/NutritionixService.dart';
+import 'package:glucolife_app/servicios/USDAFoodServicio.dart';
 import 'package:glucolife_app/vistas/alimentacion/agregar_alimento.dart';
 
-class BuscadorAlimentos extends StatefulWidget {
+class BuscadorAlimentosVista extends StatefulWidget {
   @override
   _BusquedaAlimentosState createState() => _BusquedaAlimentosState();
 }
 
-class _BusquedaAlimentosState extends State<BuscadorAlimentos> {
+class _BusquedaAlimentosState extends State<BuscadorAlimentosVista> {
   TextEditingController _controladorBusqueda = TextEditingController();
+  ///Llamada al servicio de la API USDA Food
   USDAFood _usdaFood = USDAFood();
   List<Alimentos> _resultadosBusqueda = [];
 
@@ -17,9 +18,17 @@ class _BusquedaAlimentosState extends State<BuscadorAlimentos> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ItemDetailScreen(product: producto),
+        builder: (context) => AgregarAlimentoVista(producto: producto),
       ),
     );
+  }
+
+  /// Llamada al servicio para realizar la busqueda
+  void _enCambioTextoBusqueda(String query) async {
+    List<Alimentos> resultados = await _usdaFood.buscarAlimento(query);
+    setState(() {
+      _resultadosBusqueda = resultados;
+    });
   }
 
   @override
@@ -40,7 +49,7 @@ class _BusquedaAlimentosState extends State<BuscadorAlimentos> {
               onChanged: _enCambioTextoBusqueda,
               decoration: InputDecoration(
                 labelText: 'Buscar comida',
-                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
               ),
             ),
             SizedBox(height: 20),
@@ -49,7 +58,7 @@ class _BusquedaAlimentosState extends State<BuscadorAlimentos> {
                 itemCount: _resultadosBusqueda.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    title: Text(_resultadosBusqueda[index].description),
+                    title: Text(_resultadosBusqueda[index].descripcion),
                     onTap: () =>
                         _alTocarResultadoBusqueda(_resultadosBusqueda[index]),
                   );
@@ -60,12 +69,5 @@ class _BusquedaAlimentosState extends State<BuscadorAlimentos> {
         ),
       ),
     );
-  }
-
-  void _enCambioTextoBusqueda(String query) async {
-    List<Alimentos> resultados = await _usdaFood.performSearch(query);
-    setState(() {
-      _resultadosBusqueda = resultados;
-    });
   }
 }

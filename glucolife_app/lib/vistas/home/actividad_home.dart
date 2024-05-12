@@ -1,53 +1,56 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Importa la biblioteca fl_chart
+import 'package:fl_chart/fl_chart.dart';
 import 'package:glucolife_app/provider/provider_fecha.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-class CaloriasQuemadas extends StatelessWidget {
+class CaloriasQuemadasVista extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final selectedDateModel = Provider.of<SelectedDateModel>(context);
-    DateTime selectedDate = selectedDateModel.selectedDate;
+    /// Llamada al provider para poder mantener la vista actualizada
+    final selectedDateModel = Provider.of<SeleccionarFechaProvider>(context);
+    DateTime selectedDate = selectedDateModel.seleccionarFecha;
 
     final dateFormatter = DateFormat('yyyy-MM-dd');
+    User? currentUser = FirebaseAuth.instance.currentUser;
 
     return StreamBuilder(
+      /// Filtra por usuario
       stream: FirebaseFirestore.instance
           .collection('actividades')
+          .where('usuario', isEqualTo: currentUser?.uid)
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         }
-
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // Filtrar los documentos por fecha en Flutter (no en Firestore)
-        List<QueryDocumentSnapshot> filteredDocs = snapshot.data!.docs
-            .where((document) {
+        /// Filtra por fecha
+        List<QueryDocumentSnapshot> filteredDocs =
+            snapshot.data!.docs.where((document) {
           Map<String, dynamic> data = document.data() as Map<String, dynamic>;
           String dateString = data['fechaRegistro'];
           DateTime foodDate = dateFormatter.parse(dateString);
-          return dateFormatter.format(foodDate) == dateFormatter.format(selectedDate);
-        })
-            .toList();
+          return dateFormatter.format(foodDate) ==
+              dateFormatter.format(selectedDate);
+        }).toList();
 
-        // Calcular las calorías totales
         double totalCalorias = filteredDocs.fold(
           0,
-              (sum, document) => sum + (document.data() as Map<String, dynamic>)['caloriasQuemadas'],
+          (sum, document) =>
+              sum +
+              (document.data() as Map<String, dynamic>)['caloriasQuemadas'],
         );
 
-        // Establecer el límite de calorías
-        double limiteCalorias = 2500;
+        double limiteCalorias = 5000;
 
-        // Crear datos para el gráfico circular
         List<PieChartSectionData> pieChartData = [
           PieChartSectionData(
             color: Colors.blue,

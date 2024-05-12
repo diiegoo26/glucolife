@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:glucolife_app/vistas/signin/registro.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginVista extends StatefulWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _LoginVistaState createState() => _LoginVistaState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginVistaState extends State<LoginVista> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final LoginViewModel _loginViewModel = LoginViewModel();
@@ -20,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Fondo con degradado
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -35,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          // Contenido de la pantalla de inicio de sesión
           Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -80,14 +78,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       if (email.isNotEmpty && password.isNotEmpty) {
                         try {
-                          bool success = await _loginViewModel.signIn(
+                          /// Llamada al servicio para realizar el logueo
+                          bool exito = await _loginViewModel.signIn(
                             context,
                             email,
                             password,
                           );
 
-                          if (!success) {
-                            // Muestra un SnackBar si la autenticación falla
+                          if (!exito) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
@@ -97,7 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           }
                         } catch (e) {
-                          // Muestra un SnackBar con el mensaje de error específico
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Error: $e'),
@@ -137,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => RegistrationForm(),
+                          builder: (context) => RegistroVista(),
                         ),
                       );
                     },
@@ -161,8 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      SocialLoginButton(
+                      botonLogueoRedes(
                         onPressed: () {
+                          /// Llamada al servicio para iniciar sesion mediante Google
                           _loginViewModel.signInWithGoogle(context);
                         },
                         icon: Image.asset(
@@ -171,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 24,
                         ),
                       ),
-                      SocialLoginButton(
+                      botonLogueoRedes(
                         onPressed: () {
                           // Implementa la lógica de inicio de sesión con Apple
                         },
@@ -181,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 24,
                         ),
                       ),
-                      SocialLoginButton(
+                      botonLogueoRedes(
                         onPressed: () {
                           // Implementa la lógica de inicio de sesión con Facebook
                         },
@@ -222,6 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// Ventana para solicitar el cambio de contraseña en caso de olvido
   void irCambioContrasena() {
     showDialog(
       context: context,
@@ -260,11 +259,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class SocialLoginButton extends StatelessWidget {
+class botonLogueoRedes extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget icon;
 
-  const SocialLoginButton({
+  const botonLogueoRedes({
     Key? key,
     required this.onPressed,
     required this.icon,

@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/buscador_actividad.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-import '../../provider/provider_fecha.dart';
+import 'package:glucolife_app/vistas/deportes/lista_actividades.dart';
 
+/// Esta clase representa la visualizacion detallada de las actividades que se quieren agregar
 class VisualizarActividad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final selectedDateModel = Provider.of<SelectedDateModel>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Actividad física'), // Mostrar la fecha seleccionada
+        title: Text('Actividad física'),
         backgroundColor: Colors.green,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -25,7 +21,7 @@ class VisualizarActividad extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: ListaActividades(),
+            child: ListaActividadesVista(),
           ),
           SizedBox(
             height: 4,
@@ -37,105 +33,41 @@ class VisualizarActividad extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => BuscadorActividades(),
+                    builder: (context) => BuscadorActividadesVista(),
                   ),
                 );
               },
-              child: Text('Agregar actividad'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.white,
+                onPrimary: Colors.green,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.search, // El icono que deseas usar
+                    color: Colors.green, // Color del icono
+                  ),
+                  SizedBox(width: 10), // Espacio entre el icono y el texto
+                  Text(
+                    'Buscar actividad física',
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
+
         ],
       ),
     );
-  }
-}
-
-class ListaActividades extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final selectedDateModel = Provider.of<SelectedDateModel>(context);
-    DateTime selectedDate = selectedDateModel.selectedDate;
-
-    final dateFormatter = DateFormat('yyyy-MM-dd');
-
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('actividades')
-          .snapshots(),
-      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        // Filtrar los documentos por fecha en Flutter (no en Firestore)
-        List<QueryDocumentSnapshot> filteredDocs = snapshot.data!.docs
-            .where((document) {
-          Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-          String dateString = data['fechaRegistro'];
-          // Convertir la cadena de fecha a DateTime
-          DateTime foodDate = dateFormatter.parse(dateString);
-          // Comparar las fechas
-          return dateFormatter.format(foodDate) == dateFormatter.format(selectedDate);
-        })
-            .toList();
-
-        return ListView(
-          children: filteredDocs.map((DocumentSnapshot document) {
-            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-
-            return Card(
-              elevation: 3, // Añadir sombra
-              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: ListTile(
-                title: Text(data['nombre']),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Intensidad: ${data['intensidad']}'),
-                    Text('Duración: ${data['tiempoRealizado']}'),
-                    Text('Calorias quemadas: ${data['caloriasQuemadas']} kcal'),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    // Llamar a la función para eliminar el medicamento
-                    eliminar(context, document.id);
-                  },
-                ),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    );
-  }
-
-  void eliminar(BuildContext context, String documentId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('actividades')
-          .doc(documentId)
-          .delete();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Actividad eliminada con éxito'),
-        ),
-      );
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al eliminar la actividad'),
-        ),
-      );
-    }
   }
 }
 

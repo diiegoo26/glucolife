@@ -1,31 +1,36 @@
-// exercise_screen.dart
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
 import 'package:glucolife_app/vistas/deportes/agregar_actividad.dart';
 import 'package:provider/provider.dart';
 
-class BuscadorActividades extends StatefulWidget {
+class BuscadorActividadesVista extends StatefulWidget {
   @override
-  _BuscadorActividadesState createState() => _BuscadorActividadesState();
+  _BuscadorActividadesVistaState createState() =>
+      _BuscadorActividadesVistaState();
 }
 
-class _BuscadorActividadesState extends State<BuscadorActividades> {
+class _BuscadorActividadesVistaState extends State<BuscadorActividadesVista> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    Provider.of<ActividadViewModel>(context, listen: false).fetchExercises();
+
+    /// Llamada al provider para poder mantener la vista actualizada
+    Provider.of<ActividadViewModel>(context, listen: false)
+        .obtenerActividades();
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<ActividadViewModel>(context);
+    /// Llamada al provider para poder mantener la vista actualizada
+    final actividadViewModel = Provider.of<ActividadViewModel>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Buscador'),
         backgroundColor: Colors.green,
+        centerTitle: true,
       ),
       body: Column(
         children: [
@@ -34,7 +39,8 @@ class _BuscadorActividadesState extends State<BuscadorActividades> {
             child: TextField(
               controller: _searchController,
               onChanged: (query) {
-                viewModel.filterExercises(query);
+                /// Llamada al servicio para realizar la busqueda de ejercicios
+                actividadViewModel.filterejercicios(query);
               },
               decoration: InputDecoration(
                 labelText: 'Buscar ejercicio',
@@ -44,9 +50,9 @@ class _BuscadorActividadesState extends State<BuscadorActividades> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: viewModel.filteredExercises.length,
+              itemCount: actividadViewModel.filtrar.length,
               itemBuilder: (context, index) {
-                final ejercicio = viewModel.filteredExercises[index];
+                final ejercicio = actividadViewModel.filtrar[index];
                 return ListTile(
                   title: Text(ejercicio.nombre),
                   onTap: () {
@@ -54,7 +60,7 @@ class _BuscadorActividadesState extends State<BuscadorActividades> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ExerciseDetailScreen(
+                        builder: (context) => AgregarActividadVista(
                           ejercicio: ejercicio,
                         ),
                       ),

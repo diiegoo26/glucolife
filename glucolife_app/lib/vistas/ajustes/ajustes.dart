@@ -1,23 +1,27 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
 import 'package:glucolife_app/provider/provider_usuario.dart';
+import 'package:glucolife_app/viewmodel/ajustes_viewmodel.dart';
 import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:glucolife_app/vistas/ajustes/datos_medicos.dart';
 import 'package:glucolife_app/vistas/ajustes/datos_personales.dart';
-import 'package:glucolife_app/vistas/home/home.dart';
+import 'package:glucolife_app/vistas/ajustes/conectar_dispositivos.dart';
+import 'package:glucolife_app/vistas/ajustes/recuperar_pass.dart';
 import 'package:glucolife_app/vistas/welcome/welcome.dart';
 import 'package:provider/provider.dart';
 
-class Ajustes extends StatefulWidget {
+class AjustesVitsa extends StatefulWidget {
+  const AjustesVitsa();
+
   @override
-  _AjustesScreenState createState() => _AjustesScreenState();
+  _AjustesVitsaState createState() => _AjustesVitsaState();
 }
 
-class _AjustesScreenState extends State<Ajustes> {
-  final LoginViewModel _viewModel = LoginViewModel();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class _AjustesVitsaState extends State<AjustesVitsa> {
+  final AjustesViewModel _ajustesViewModel = AjustesViewModel();
+  final LoginViewModel _loginViewModel = LoginViewModel();
+
   Usuario? _usuario;
 
   @override
@@ -30,10 +34,16 @@ class _AjustesScreenState extends State<Ajustes> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ajustes'),
+        title: const Text('Ajustes'),
         backgroundColor: Colors.green,
         elevation: 0.0,
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/home');
+          },
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -51,12 +61,13 @@ class _AjustesScreenState extends State<Ajustes> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              _buildUserProfile(),
+              _TarjetaDelUsuario(),
               const SizedBox(height: 20.0),
-              _buildCard("Datos personales", irDatosPersonales),
-              _buildCard("Datos Médicos", irDatosMedicos),
-              _buildCard("Cambio de contraseña", irCambioContrasena),
-              _buildLogoutTile(),
+              _Tarjeta("Datos personales", irDatosPersonales),
+              _Tarjeta("Datos Médicos", irDatosMedicos),
+              _Tarjeta("Cambio de contraseña", irCambioContrasena),
+              _Tarjeta("Dispositivos", irDispositivos),
+              _cerrarSesion(),
             ],
           ),
         ),
@@ -64,14 +75,17 @@ class _AjustesScreenState extends State<Ajustes> {
     );
   }
 
-  Widget _buildUserProfile() {
-    return Consumer<UserData>(
+  Widget _TarjetaDelUsuario() {
+    return Consumer<UsuarioProvider>(
       builder: (context, usuarioModel, child) {
         return Row(
           children: [
             CircleAvatar(
               radius: 30.0,
-              backgroundImage: NetworkImage(usuarioModel.usuario?.imagenUrl ?? "https://cdn-icons-png.flaticon.com/512/3135/3135768.png"),
+              backgroundImage: NetworkImage(
+                usuarioModel.obtenerUsuario?.imagenUrl ??
+                    "https://cdn-icons-png.flaticon.com/512/3135/3135768.png",
+              ),
             ),
             SizedBox(width: 16.0),
             Column(
@@ -79,15 +93,15 @@ class _AjustesScreenState extends State<Ajustes> {
               children: [
                 Text(
                   'Bienvenido,',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
                 Text(
-                  '${usuarioModel.usuario?.nombre} ${usuarioModel.usuario?.apellidos}',
-                  style: TextStyle(
+                  '${usuarioModel.obtenerUsuario?.nombre} ${usuarioModel.obtenerUsuario?.apellidos}',
+                  style: const TextStyle(
                     fontSize: 16.0,
                     color: Colors.white,
                   ),
@@ -100,7 +114,7 @@ class _AjustesScreenState extends State<Ajustes> {
     );
   }
 
-  Widget _buildCard(String title, VoidCallback onTap) {
+  Widget _Tarjeta(String title, VoidCallback onTap) {
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(
@@ -110,7 +124,7 @@ class _AjustesScreenState extends State<Ajustes> {
       child: ListTile(
         title: Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -126,58 +140,27 @@ class _AjustesScreenState extends State<Ajustes> {
   void irDatosPersonales() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => DatosPersonales()),
+      MaterialPageRoute(builder: (context) => DatosPersonalesVista()),
     );
   }
 
   void irDatosMedicos() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => DatosMedicos()),
+      MaterialPageRoute(builder: (context) => DatosMedicosVista()),
     );
   }
 
-  void irCambioContrasena() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        String email = '';
-
-        return AlertDialog(
-          title: Text('Cambio de Contraseña'),
-          content: TextFormField(
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: 'Correo electrónico',
-              border: OutlineInputBorder(),
-            ),
-            onChanged: (value) {
-              email = value;
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _auth.sendPasswordResetEmail(email: email);
-              },
-              child: Text('Enviar'),
-            ),
-          ],
-        );
-      },
+  void irDispositivos() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ConectarDispositivos()),
     );
   }
 
   void _obtenerUsuarioActual() async {
     try {
-      Usuario? usuario = await _viewModel.obtenerUsuarioActual();
+      Usuario? usuario = await _loginViewModel.obtenerUsuarioActual();
       setState(() {
         _usuario = usuario;
       });
@@ -186,37 +169,14 @@ class _AjustesScreenState extends State<Ajustes> {
     }
   }
 
-  void _mostrarDialogoCerrarSesion() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('¿Cerrar Sesión?'),
-          content: Text('¿Estás seguro de que deseas cerrar sesión?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => WelcomeScreen()),
-                );
-              },
-              child: Text('Cerrar Sesión'),
-            ),
-          ],
-        );
-      },
+  void irCambioContrasena() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => RecuperarPassVista()),
     );
   }
 
-  Widget _buildLogoutTile() {
+  Widget _cerrarSesion() {
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(
@@ -224,10 +184,11 @@ class _AjustesScreenState extends State<Ajustes> {
       ),
       color: Colors.white.withOpacity(0.8),
       child: ListTile(
-        title: Text(
+        title: const Text(
           "Cerrar Sesión",
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
         trailing: Icon(
@@ -240,4 +201,36 @@ class _AjustesScreenState extends State<Ajustes> {
       ),
     );
   }
+
+  /// Muestra un diálogo para confirmar el cierre de sesión.
+  void _mostrarDialogoCerrarSesion() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('¿Cerrar Sesión?'),
+          content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                _ajustesViewModel.cerrarSesion(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => BienvenidaVista()),
+                );
+              },
+              child: const Text('Cerrar Sesión'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
+

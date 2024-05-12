@@ -1,27 +1,26 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
-import 'package:glucolife_app/provider/provider_usuario.dart';
+import 'package:glucolife_app/viewmodel/ajustes_viewmodel.dart';
 import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-class DatosPersonales extends StatefulWidget {
+class DatosPersonalesVista extends StatefulWidget {
   @override
-  _DatosPersonalesState createState() => _DatosPersonalesState();
+  _DatosPersonalesVistaState createState() => _DatosPersonalesVistaState();
 }
 
-class _DatosPersonalesState extends State<DatosPersonales> {
-  final LoginViewModel _viewModel = LoginViewModel();
+class _DatosPersonalesVistaState extends State<DatosPersonalesVista> {
+  final LoginViewModel _loginViewModel = LoginViewModel();
+  final AjustesViewModel _ajustesViewModel = AjustesViewModel();
+
   Usuario? _usuario;
   String? _imagePath;
 
   @override
+  /// Inicializacion de las llamadas a los servicios
   void initState() {
     super.initState();
     _obtenerUsuarioActual();
@@ -31,13 +30,13 @@ class _DatosPersonalesState extends State<DatosPersonales> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Datos personales'),
+        title: const Text('Datos personales'),
         backgroundColor: Colors.green,
         elevation: 0.0,
         centerTitle: true,
       ),
       body: Container(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         color: Colors.white,
         child: GestureDetector(
           onTap: () {
@@ -54,17 +53,18 @@ class _DatosPersonalesState extends State<DatosPersonales> {
                     future: _getImageProvider(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
+                        return const CircularProgressIndicator();
                       } else if (snapshot.hasError) {
                         print('Error cargando la imagen: ${snapshot.error}');
-                        return Text('Error al cargar la imagen');
+                        return const Text('Error al cargar la imagen');
                       } else {
                         return ClipOval(
                           child: SizedBox(
                             width: 120,
                             height: 120,
                             child: Image(
-                              image: snapshot.data ?? AssetImage('assets/placeholder_image.png'),
+                              image: snapshot.data ??
+                                  AssetImage('assets/placeholder_image.png'),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -74,38 +74,40 @@ class _DatosPersonalesState extends State<DatosPersonales> {
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 25,
               ),
               ElevatedButton(
                 onPressed: _pickImage,
                 style: ElevatedButton.styleFrom(
+                  primary: Colors.white,
+                  onPrimary: Colors.green,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
                 ),
-                child: Text(
+                child: const Text(
                   "Cambiar imagen de perfil",
                   style: TextStyle(
-                      fontSize: 14,
-                      letterSpacing: 2.2,
-                      color: Colors.green),
+                      fontSize: 14, letterSpacing: 2.2, color: Colors.green),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 25,
               ),
-              buildTextField("Nombre", "${_usuario?.nombre}", (value) {
+              contruirCampos("Nombre", "${_usuario?.nombre}", (value) {
                 setState(() {
                   _usuario?.nombre = value;
                 });
               }),
-              buildTextField("Apellidos", "${_usuario?.apellidos}", (value) {
+              contruirCampos("Apellidos", "${_usuario?.apellidos}", (value) {
                 setState(() {
                   _usuario?.apellidos = value;
                 });
               }),
-              SizedBox(height: 10.0),
-              buildTextFieldCalendar(
+              const SizedBox(height: 10.0),
+              contruirCalendario(
                 "Fecha de nacimiento",
                 _usuario?.fechaNacimiento,
                     (selectedDate) {
@@ -114,7 +116,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
                   });
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -126,31 +128,35 @@ class _DatosPersonalesState extends State<DatosPersonales> {
                             borderRadius: BorderRadius.circular(20)),
                       ),
                       onPressed: () {},
-                      child: Text("Cancelar",
+                      child: const Text("Cancelar",
                           style: TextStyle(
                               fontSize: 14,
                               letterSpacing: 2.2,
                               color: Colors.black)),
                     ),
                   ),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   Container(
                     width: MediaQuery.of(context).size.width * .4,
                     child: ElevatedButton(
-                      onPressed: _guardarCambiosUsuario,
+                      onPressed: () {
+                        /// Llamada al servicio para guardar los cambios
+                        _ajustesViewModel.guardarDatosPersonales(
+                            context, _imagePath, _usuario);
+                      },
                       style: ElevatedButton.styleFrom(
+                        primary: Colors.white,
+                        onPrimary: Colors.green,
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
                       ),
-                      child: Text(
+                      child: const Text(
                         "Guardar",
-                        style: TextStyle(
-                            fontSize: 14,
-                            letterSpacing: 2.2,
-                            color: Colors.white),
                       ),
                     ),
-                  )
+                  ),
                 ],
               )
             ],
@@ -160,7 +166,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
     );
   }
 
-  Widget buildTextField(
+  Widget contruirCampos(
       String labelText,
       String placeholder,
       void Function(String) onChanged,
@@ -171,11 +177,11 @@ class _DatosPersonalesState extends State<DatosPersonales> {
         onChanged: onChanged,
         decoration: InputDecoration(
           contentPadding:
-          EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+          const EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
           labelText: labelText,
           floatingLabelBehavior: FloatingLabelBehavior.always,
           hintText: placeholder,
-          hintStyle: TextStyle(
+          hintStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -185,7 +191,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.green,
             ),
           ),
@@ -194,7 +200,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
     );
   }
 
-  Widget buildTextFieldCalendar(
+  Widget contruirCalendario(
       String labelText,
       DateTime? value,
       void Function(DateTime) onDateSelected,
@@ -207,7 +213,8 @@ class _DatosPersonalesState extends State<DatosPersonales> {
           text: value != null ? DateFormat('yyyy-MM-dd').format(value) : '',
         ),
         onTap: () {
-          _selectDate(context, onDateSelected);
+          _ajustesViewModel.seleccionarFecha(
+              context, onDateSelected, DateTime(2024));
         },
         decoration: InputDecoration(
           labelText: labelText,
@@ -216,35 +223,20 @@ class _DatosPersonalesState extends State<DatosPersonales> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(
+            borderSide: const BorderSide(
               color: Colors.green,
             ),
           ),
-          suffixIcon: Icon(Icons.calendar_today),
+          suffixIcon: const Icon(Icons.calendar_today),
         ),
       ),
     );
   }
 
-  void _selectDate(
-      BuildContext context,
-      void Function(DateTime) onDateSelected,
-      ) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _usuario?.fechaNacimiento ?? DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-
-    if (picked != null) {
-      onDateSelected(picked);
-    }
-  }
-
+  /// Comunicacion con el servico para poder recuperar al usuario logueado
   void _obtenerUsuarioActual() async {
     try {
-      Usuario? usuario = await _viewModel.obtenerUsuarioActual();
+      Usuario? usuario = await _loginViewModel.obtenerUsuarioActual();
       setState(() {
         _usuario = usuario;
       });
@@ -253,41 +245,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
     }
   }
 
-  void _guardarCambiosUsuario() async {
-    try {
-      User? firebaseUser = FirebaseAuth.instance.currentUser;
-      if (firebaseUser != null) {
-        String storagePath = 'usuarios/${firebaseUser.uid}/perfil.jpg';
-        Reference storageReference =
-        FirebaseStorage.instance.ref().child(storagePath);
-        await storageReference.putFile(File(_imagePath ?? ''));
-        String nuevaImagenUrl = await storageReference.getDownloadURL();
-        await FirebaseFirestore.instance.collection('usuarios').doc(firebaseUser.uid).update({
-          'imagenUrl': nuevaImagenUrl,
-          'nombre': _usuario?.nombre,
-          'apellidos': _usuario?.apellidos,
-          'fechaNacimiento': _usuario?.fechaNacimiento,
-          'imagenUrl':nuevaImagenUrl
-        });
-        UserData usuarioModel = Provider.of<UserData>(context, listen: false);
-        _usuario?.imagenUrl = nuevaImagenUrl;
-        usuarioModel.actualizarUsuario(_usuario!);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cambios guardados correctamente.'),
-          ),
-        );
-      }
-    } catch (error) {
-      print('Error al guardar los cambios: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar los cambios.'),
-        ),
-      );
-    }
-  }
-
+  /// Abre la galería para seleccionar una imagen de perfil.
   void _pickImage() async {
     final picker = ImagePicker();
     try {
@@ -302,6 +260,7 @@ class _DatosPersonalesState extends State<DatosPersonales> {
     }
   }
 
+  /// Obtiene un Future de ImageProvider basado en la ruta de la imagen o la URL de la imagen del usuario.
   Future<ImageProvider?> _getImageProvider() async {
     if (_imagePath != null) {
       return FileImage(File(_imagePath!));
@@ -310,5 +269,4 @@ class _DatosPersonalesState extends State<DatosPersonales> {
     }
     return null;
   }
-
 }

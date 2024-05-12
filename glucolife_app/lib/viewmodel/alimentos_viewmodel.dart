@@ -1,183 +1,83 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/alimentos.dart';
-import 'package:glucolife_app/servicios/NutritionixService.dart';
-import 'package:intl/intl.dart';
+import 'package:glucolife_app/servicios/AlimentoServicio.dart';
 
+class AlimentosViewModel extends ChangeNotifier {
+  final AlimentosServicio _alimentosServicio = AlimentosServicio();
 
-class AlimentosViewModel {
-  USDAFood usdaFood = USDAFood();
-
-  // Obtener la instancia de FirebaseAuth
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-
-  Future<void> agregarAlimentoAFirebase(
-      Alimentos product, int cantidadUnidades) async {
+  /// Agrega un alimento a Firebase.
+  ///
+  /// [producto]: El alimento a agregar.
+  /// [cantidadUnidades]: La cantidad de unidades del alimento.
+  ///
+  /// Devuelve error cuando no se puede guardar los alimentos en Firebase
+  Future<void> agregarAlimentoAFirebase(Alimentos producto, int cantidadUnidades,DateTime fechaSeleccionada) async {
     try {
-      double totalCalorias =
-          usdaFood.calcularCaloriasTotales([product]) * cantidadUnidades;
-
-      // Obtener el usuario actualmente autenticado
-      User? currentUser = _auth.currentUser;
-
-      if (currentUser != null) {
-        // Si hay un usuario autenticado, obtener su UID
-        String uid = currentUser.uid;
-
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
-        CollectionReference alimentosCollection =
-        firestore.collection('alimentos');
-
-        Timestamp fecha = Timestamp.now(); // Obtener la fecha y hora actuales
-
-        await alimentosCollection.add({
-          'usuario': uid,
-          'descripcion': product.description,
-          'proteinas': product.foodNutrients
-              .where((nutriente) => nutriente.nutrientName == 'Protein')
-              .map((nutriente) => nutriente.value)
-              .join(', '),
-          'carbohidratos': product.foodNutrients
-              .where((nutriente) =>
-          nutriente.nutrientName == 'Carbohydrate, by difference')
-              .map((nutriente) => nutriente.value)
-              .join(', '),
-          'grasas': product.foodNutrients
-              .where((nutriente) => nutriente.nutrientName == 'Total lipid (fat)')
-              .map((nutriente) => nutriente.value)
-              .join(', '),
-          'totalCalorias': totalCalorias,
-          'cantidadUnidades': cantidadUnidades,
-          'fechaRegistro': DateFormat('yyyy-MM-dd').format(DateTime.now().toLocal()),
-        });
-
-        // Mensaje de éxito o realizar otras acciones después de almacenar en Firebase
-      } else {
-        print('Usuario no autenticado');
-        // Manejar el caso en el que no haya usuario autenticado según tus necesidades
-      }
+      await _alimentosServicio.agregarAlimentoAFirebase(producto, cantidadUnidades,fechaSeleccionada);
+      notifyListeners();
     } catch (error) {
-      print('Error al almacenar en Firebase: $error');
-      // Manejar el error según tus necesidades
+      throw 'Error al agregar alimento a Firebase: $error';
     }
   }
 
-
-  Future<void> eliminar(BuildContext context, String documentId) async {
+  /// Elimina un alimento de Firebase.
+  ///
+  /// [documentId]: El ID del documento del alimento a eliminar.
+  ///
+  /// Devuelve error cuando no se puede eliminar el alimento en Firebase
+  Future<void> eliminarAlimento(String documentId) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('alimentos')
-          .doc(documentId)
-          .delete();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Alimento eliminado con éxito'),
-        ),
-      );
-      obtenerValoresTotal();
+      await _alimentosServicio.eliminarAlimento(documentId);
+      notifyListeners();
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al eliminar el alimento'),
-        ),
-      );
+      throw 'Error al eliminar alimento: $error';
     }
   }
 
+  /// Obtiene los valores totales de los alimentos.
+  ///
+  /// Devuelve error cuando no se puede obtener los valores de Firebase
   Future<Map<String, double>> obtenerValoresTotal() async {
     try {
-      // Obtener el usuario actualmente autenticado
-      User? currentUser = _auth.currentUser;
-
-      if (currentUser != null) {
-        // Si hay un usuario autenticado, obtener su UID
-        String uid = currentUser.uid;
-
-        // Obtener la referencia a la colección de alimentos
-        CollectionReference alimentosCollection =
-        FirebaseFirestore.instance.collection('alimentos');
-
-        // Obtener documentos que pertenecen al usuario
-        QuerySnapshot querySnapshot = await alimentosCollection
-            .where('usuario', isEqualTo: uid)
-            .get();
-
-        // Sumar las grasas, proteínas y carbohidratos de todos los alimentos del usuario
-        double grasasTotales = querySnapshot.docs
-            .map((doc) => double.tryParse(doc['grasas'] ?? '0') ?? 0.0)
-            .fold(0, (previous, current) => previous + current);
-
-        double proteinasTotales = querySnapshot.docs
-            .map((doc) => double.tryParse(doc['proteinas'] ?? '0') ?? 0.0)
-            .fold(0, (previous, current) => previous + current);
-
-        double carboTotales = querySnapshot.docs
-            .map((doc) => double.tryParse(doc['carbohidratos'] ?? '0') ?? 0.0)
-            .fold(0, (previous, current) => previous + current);
-
-        // Devolver un mapa con los valores totales
-        return {
-          'grasasTotales': grasasTotales,
-          'proteinasTotales': proteinasTotales,
-          'carboTotales': carboTotales,
-        };
-      } else {
-        // Manejar el caso en el que no haya usuario autenticado según tus necesidades
-        print('Usuario no autenticado');
-        return {
-          'grasasTotales': 0.0,
-          'proteinasTotales': 0.0,
-          'carboTotales': 0.0,
-        }; // O cualquier otro valor predeterminado
-      }
+      return await _alimentosServicio.obtenerValoresTotal();
     } catch (error) {
-      // Manejar el error según tus necesidades
-      print('Error al obtener los valores totales: $error');
-      return {
-        'grasasTotales': 0.0,
-        'proteinasTotales': 0.0,
-        'carboTotales': 0.0,
-      }; // O cualquier otro valor predeterminado
+      throw 'Error al obtener valores totales de alimentos: $error';
     }
   }
 
-  Future<List<Map<String, dynamic>>> obtenerAlimentosPorFecha(String fecha) async {
-    try {
-      // Obtener el usuario actualmente autenticado
-      User? currentUser = _auth.currentUser;
+  /// Calcula el total de calorías de un producto.
+  ///
+  /// [producto]: El alimento.
+  /// [unidades]: La cantidad de unidades del alimento.
+  double calcularTotalCalorias(Alimentos producto, int unidades) {
+    double totalCalorias = _alimentosServicio.calcularCaloriasTotales([producto]) * unidades;
+    return double.parse(totalCalorias.toStringAsFixed(2));
+  }
 
-      if (currentUser != null) {
-        // Si hay un usuario autenticado, obtener su UID
-        String uid = currentUser.uid;
+  /// Calcula el total de proteínas de un producto.
+  ///
+  /// [producto]: El alimento.
+  /// [unidades]: La cantidad de unidades del alimento.
+  double calcularTotalProteinas(Alimentos producto, int unidades) {
+    double totalProteinas = _alimentosServicio.calcularTotalProteinas([producto]) * unidades;
+    return double.parse(totalProteinas.toStringAsFixed(2));
+  }
 
-        // Obtener la referencia a la colección de alimentos
-        CollectionReference alimentosCollection = firestore.collection('alimentos');
+  /// Calcula el total de grasas de un producto.
+  ///
+  /// [producto]: El alimento.
+  /// [unidades]: La cantidad de unidades del alimento.
+  double calcularTotalGrasas(Alimentos producto, int unidades) {
+    double totalGrasas = _alimentosServicio.calcularTotalGrasas([producto]) * unidades;
+    return double.parse(totalGrasas.toStringAsFixed(2));
+  }
 
-        // Obtener documentos que pertenecen al usuario y tienen la fecha dada
-        QuerySnapshot querySnapshot = await alimentosCollection
-            .where('usuario', isEqualTo: uid)
-            .where('fechaRegistro', isEqualTo: fecha)
-            .get();
-
-        // Mapear los documentos a una lista de mapas
-        List<Map<String, dynamic>> alimentosList = querySnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
-
-        return alimentosList;
-      } else {
-        // Manejar el caso en el que no haya usuario autenticado según tus necesidades
-        print('Usuario no autenticado');
-        return []; // O cualquier otro valor predeterminado
-      }
-    } catch (error) {
-      // Manejar el error según tus necesidades
-      print('Error al obtener alimentos por fecha: $error');
-      return []; // O cualquier otro valor predeterminado
-    }
+  /// Calcula el total de carbohidratos de un producto.
+  ///
+  /// [producto]: El alimento.
+  /// [unidades]: La cantidad de unidades del alimento.
+  double calcularTotalCarbohidratos(Alimentos producto, int unidades) {
+    double totalCarbohidratos = _alimentosServicio.calcularTotalCarbohidratos([producto]) * unidades;
+    return double.parse(totalCarbohidratos.toStringAsFixed(2));
   }
 }

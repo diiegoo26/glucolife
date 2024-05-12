@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:glucolife_app/vistas/home/actividad_home.dart';
 
-class TarjetaActividadHome extends StatelessWidget {
+class TarjetaActividadHomeVista extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -29,7 +28,7 @@ class TarjetaActividadHome extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            CaloriasQuemadas()
+            CaloriasQuemadasVista()
           ],
         ),
       ),

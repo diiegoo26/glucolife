@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
+  chopper:
+    dependency: transitive
+    description:
+      name: chopper
+      sha256: "1b6280ec22841b844448bec8ef2644d9cbe9ea8dfce13ec9cab9e8d3aac3830d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.4.0"
   circular_profile_avatar:
     dependency: "direct main"
     description:
@@ -161,6 +169,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.10"
+  disposebag:
+    dependency: "direct main"
+    description:
+      name: disposebag
+      sha256: c38be345780e0e4a4690b25b7c76b7d7d0cb39ec1c1f7895fe5e72f3630e3b78
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.1"
   equatable:
     dependency: transitive
     description:
@@ -225,6 +241,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+1"
+  fimber:
+    dependency: transitive
+    description:
+      name: fimber
+      sha256: "1415768ddd9fd66f134dbc53f731107554c98175a63d4e93234478a113ffabb8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.6"
   firebase_auth:
     dependency: "direct main"
     description:
@@ -552,6 +576,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.7"
+  json_annotation:
+    dependency: transitive
+    description:
+      name: json_annotation
+      sha256: b10a7b2ff83d83c777edba3c6a0f97045ddadd56c944e1a23a3fdf43a1bf4467
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.8.1"
   lints:
     dependency: transitive
     description:
@@ -560,6 +592,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      sha256: "623a88c9594aa774443aa3eb2d41807a48486b5613e67599fb4c41c0ad47c340"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   matcher:
     dependency: transitive
     description:
@@ -672,6 +712,54 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
+  permission_handler:
+    dependency: transitive
+    description:
+      name: permission_handler
+      sha256: "18bf33f7fefbd812f37e72091a15575e72d5318854877e0e4035a24ac1113ecb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.3.1"
+  permission_handler_android:
+    dependency: transitive
+    description:
+      name: permission_handler_android
+      sha256: "1acac6bae58144b442f11e66621c062aead9c99841093c38f5bcdcc24c1c3474"
+      url: "https://pub.dev"
+    source: hosted
+    version: "12.0.5"
+  permission_handler_apple:
+    dependency: transitive
+    description:
+      name: permission_handler_apple
+      sha256: e9ad66020b89ff1b63908f247c2c6f931c6e62699b756ef8b3c4569350cd8662
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.4.4"
+  permission_handler_html:
+    dependency: transitive
+    description:
+      name: permission_handler_html
+      sha256: "54bf176b90f6eddd4ece307e2c06cf977fb3973719c35a93b85cc7093eb6070d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
+  permission_handler_platform_interface:
+    dependency: transitive
+    description:
+      name: permission_handler_platform_interface
+      sha256: "48d4fcf201a1dad93ee869ab0d4101d084f49136ec82a8a06ed9cfeacab9fd20"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.1"
+  permission_handler_windows:
+    dependency: transitive
+    description:
+      name: permission_handler_windows
+      sha256: "1a790728016f79a41216d88672dbc5df30e686e811ad4e698bfc51f76ad91f1e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   petitparser:
     dependency: transitive
     description:
@@ -704,6 +792,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
+  qs_dart:
+    dependency: transitive
+    description:
+      name: qs_dart
+      sha256: "53eb3e489be555a60e83b2e2104638cb57d305d9cf4698e7245b7e75fb5fd1be"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.8"
   rxdart:
     dependency: "direct main"
     description:
@@ -869,6 +965,70 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.2"
+  url_launcher:
+    dependency: transitive
+    description:
+      name: url_launcher
+      sha256: "6ce1e04375be4eed30548f10a315826fd933c1e493206eab82eed01f438c8d2e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.2.6"
+  url_launcher_android:
+    dependency: transitive
+    description:
+      name: url_launcher_android
+      sha256: "360a6ed2027f18b73c8d98e159dda67a61b7f2e0f6ec26e86c3ada33b0621775"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.3.1"
+  url_launcher_ios:
+    dependency: transitive
+    description:
+      name: url_launcher_ios
+      sha256: "9149d493b075ed740901f3ee844a38a00b33116c7c5c10d7fb27df8987fb51d5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.2.5"
+  url_launcher_linux:
+    dependency: transitive
+    description:
+      name: url_launcher_linux
+      sha256: ab360eb661f8879369acac07b6bb3ff09d9471155357da8443fd5d3cf7363811
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.1"
+  url_launcher_macos:
+    dependency: transitive
+    description:
+      name: url_launcher_macos
+      sha256: b7244901ea3cf489c5335bdacda07264a6e960b1c1b1a9f91e4bc371d9e68234
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
+  url_launcher_platform_interface:
+    dependency: transitive
+    description:
+      name: url_launcher_platform_interface
+      sha256: "552f8a1e663569be95a8190206a38187b531910283c3e982193e4f2733f01029"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.2"
+  url_launcher_web:
+    dependency: transitive
+    description:
+      name: url_launcher_web
+      sha256: fff0932192afeedf63cdd50ecbb1bc825d31aed259f02bb8dba0f3b729a5e88b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.3"
+  url_launcher_windows:
+    dependency: transitive
+    description:
+      name: url_launcher_windows
+      sha256: ecf9725510600aa2bb6d7ddabe16357691b6d2805f66216a97d1b881e21beff7
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.1"
   uuid:
     dependency: transitive
     description:
@@ -893,6 +1053,78 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.0"
+  vital_core:
+    dependency: "direct main"
+    description:
+      name: vital_core
+      sha256: "35e2782390b515775d925424acab555de744bebe5cb95a0ba2b2ece1067573ea"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  vital_core_android:
+    dependency: transitive
+    description:
+      name: vital_core_android
+      sha256: "18b1cda9196e12608b5159000fe59b0a5a993f1271442c2e1650eeff969d8f9f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  vital_core_ios:
+    dependency: transitive
+    description:
+      name: vital_core_ios
+      sha256: "5b689603d18c3cb5dff7c6c013f23c1b9f2885d2c114d973714840eecbe5c119"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  vital_core_platform_interface:
+    dependency: transitive
+    description:
+      name: vital_core_platform_interface
+      sha256: db7379094e39f7041aa0d3cdbd63d7a20949c919d58e65beeeb6e3bbf0b95c48
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  vital_devices:
+    dependency: "direct main"
+    description:
+      name: vital_devices
+      sha256: "476f6f36287c4c8118023f295a66ba8a59e25389d2c94c47732e9c07c5ad5bc4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  vital_devices_android:
+    dependency: transitive
+    description:
+      name: vital_devices_android
+      sha256: dd51989453d74a4e86afadfe2881d0ea16db76e1f10f7ea4e04497282620d0be
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  vital_devices_ios:
+    dependency: transitive
+    description:
+      name: vital_devices_ios
+      sha256: "59c94e4ee350634a72017083b20e194cb3e59a31222b7c2e293fe9fd67690003"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  vital_devices_platform_interface:
+    dependency: transitive
+    description:
+      name: vital_devices_platform_interface
+      sha256: "0f313c19f4009dc1f553743e25c2085902afc1c653404a082c71eca1a731a1ad"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.8"
+  weak_map:
+    dependency: transitive
+    description:
+      name: weak_map
+      sha256: "95ca338f0cdf5f0022cc283dfa4d97f6f6b03752f67eca85ebe6d7a679ffe3ed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   web:
     dependency: transitive
     description:

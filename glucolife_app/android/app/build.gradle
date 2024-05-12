@@ -25,9 +25,8 @@ if (flutterVersionName == null) {
 android {
     namespace "com.example.glucolife_app"
 
-
     compileSdkVersion 34
-    ndkVersion "25.1.8937393"
+    ndkVersion "26.3.11579264"
 
     defaultConfig {
         multiDexEnabled true
@@ -55,7 +54,7 @@ android {
         applicationId "com.example.glucolife_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 26
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -77,5 +76,5 @@ flutter {
 
 dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }

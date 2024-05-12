@@ -1,18 +1,29 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/services.dart';
+import 'package:glucolife_app/claves.dart';
 import 'package:glucolife_app/provider/provider_fecha.dart';
 import 'package:glucolife_app/provider/provider_usuario.dart';
-import 'package:glucolife_app/servicios/WgerService.dart';
+import 'package:glucolife_app/servicios/Devices_Bloc.dart';
+import 'package:glucolife_app/servicios/NotificacionServicio.dart';
 import 'package:glucolife_app/viewmodel/actividad_viewmodel.dart';
-import 'package:glucolife_app/viewmodel/medicaciones_viewmodel.dart';
+import 'package:glucolife_app/vistas/ajustes/conectar_dispositivos.dart';
 import 'package:glucolife_app/vistas/home/home.dart';
 import 'package:glucolife_app/vistas/welcome/welcome.dart';
 import 'package:provider/provider.dart';
+import 'package:vital_core/environment.dart';
+import 'package:vital_core/region.dart';
+import 'package:vital_devices/device_manager.dart';
+import 'package:vital_devices/vital_devices.dart';
 import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fimber/fimber.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+
+import 'package:vital_core/vital_core.dart' as vital_core;
+
 
 /// Plugin de notificaciones locales de Flutter.
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -21,56 +32,63 @@ FlutterLocalNotificationsPlugin();
 /// Clave global para el navegador.
 final navigatorKey = GlobalKey<NavigatorState>();
 
+
 /// Función principal de la aplicación.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await LocalNotifications.init(); // Inicializa las notificaciones locales.
+  await NotificacionServicio.init();
 
-  // Obtiene los detalles de la notificación si la aplicación se lanzó desde una notificación.
+  var status = await Permission.notification.request();
+
+  WidgetsFlutterBinding.ensureInitialized();
+  Fimber.plantTree(DebugTree());
+
+  final vitalClient = vital_core.VitalClient()
+    ..init(
+      region: Region.eu,
+      environment: Environment.sandbox,
+      apiKey: Claves.VitalKey,
+    );
+
+  final DeviceManager deviceManager = DeviceManager();
+
   var initialNotification =
   await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
   if (initialNotification?.didNotificationLaunchApp == true) {
-    // Si la aplicación se lanzó desde una notificación, navega a la ruta correspondiente después de 1 segundo.
     Future.delayed(Duration(seconds: 1), () {
       navigatorKey.currentState!.pushNamed('/another',
           arguments: initialNotification?.notificationResponse?.payload);
     });
   }
+
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Inicializa Firebase con las opciones predeterminadas.
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Inicialización de servicios y objetos necesarios.
-  WgerService wgerService = WgerService();
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  FirebaseAuth auth = FirebaseAuth.instance;
-
-  // Inicio de la aplicación.
   runApp(
+    /// Inicializacion de los Provider
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => UserData(), // Proveedor para los datos del usuario.
+          create: (context) => UsuarioProvider(),
         ),
         ChangeNotifierProvider(
           create: (context) => ActividadViewModel(
-            exerciseService: wgerService,
-            firestore: firestore,
-            auth: auth,
-          ), // Proveedor para el modelo de vista de actividades.
+          ),
         ),
         ChangeNotifierProvider(
-          create: (context) => SelectedDateModel(), // Proveedor para el modelo de fecha seleccionada.
+          create: (context) => SeleccionarFechaProvider(),
           child: MyApp(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => DevicesBloc(deviceManager),
+          child: const ConectarDispositivos(),
         ),
       ],
       child: MyApp(),
     ),
   );
 }
-
-/// Clave de API para Firebase.
-const apiKey = "AIzaSyAMsD5TyCfbzYekFN6oDg7fNuJMRUbhPAM";
 
 /// Clase principal de la aplicación.
 class MyApp extends StatelessWidget {
@@ -79,12 +97,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'GlucoLife',
       theme: ThemeData(
-        primarySwatch: Colors.green, // Tema de la aplicación.
+        primarySwatch: Colors.green,
       ),
-      initialRoute: '/', // Ruta inicial de la aplicación.
+      initialRoute: '/',
       routes: {
-        '/': (context) => WelcomeScreen(), // Ruta para la pantalla de bienvenida.
-        '/home': (context) => HomeScreen(), // Ruta para la pantalla principal.
+        '/': (context) => BienvenidaVista(),
+        '/home': (context) => HomeVista(),
       },
     );
   }

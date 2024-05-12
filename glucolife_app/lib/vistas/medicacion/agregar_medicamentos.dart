@@ -1,9 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/medicamento.dart';
-import 'package:glucolife_app/viewmodel/medicaciones_viewmodel.dart';
+import 'package:glucolife_app/servicios/MedicamentoServicio.dart';
+import 'package:glucolife_app/servicios/NotificacionServicio.dart';
+import 'package:glucolife_app/viewmodel/medicamentos_viewmodel.dart';
+import 'package:glucolife_app/viewmodel/notificacion_viewmodel.dart';
 import 'package:glucolife_app/vistas/medicacion/visualizar_medicamentos.dart';
-import 'package:intl/intl.dart';
 
 class AgregarMedicamentos extends StatefulWidget {
   @override
@@ -11,6 +12,8 @@ class AgregarMedicamentos extends StatefulWidget {
 }
 
 class _AgregarMedicamentosState extends State<AgregarMedicamentos> {
+  MedicamentoViewModel _medicamentoViewModel = MedicamentoViewModel(medicamentoServicio: MedicamentoServicio());
+  NotificacionViewModel _notificacionViewModel = NotificacionViewModel(notificacionServicio: NotificacionServicio());
   String? _selectedIntervalo;
   String? _intervaloPersonalizado;
   TextEditingController _nombreMedicamentoController = TextEditingController();
@@ -30,6 +33,7 @@ class _AgregarMedicamentosState extends State<AgregarMedicamentos> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Registrar Medicamento'),
+        backgroundColor: Colors.green,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -80,12 +84,13 @@ class _AgregarMedicamentosState extends State<AgregarMedicamentos> {
                   String nombreMedicamento = _nombreMedicamentoController.text;
                   int dosis = int.tryParse(_dosisController.text) ?? 0;
                   String intervalo = _selectedIntervalo == 'Personalizado' ? _intervaloPersonalizado ?? '' : _selectedIntervalo ?? '';
-                  LocalNotifications.agregarMedicamentoAFirebase(Medicamento(
+                  /// Llamada al servicio para agregar el medicamento en Firebase
+                  _medicamentoViewModel.agregarMedicamento(Medicamento(
                     nombre: nombreMedicamento,
                     dosis: dosis,
                     intervalo: intervalo,
                   ));
-                  _showNotification();
+                  mostrarNotificaciones();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -94,7 +99,13 @@ class _AgregarMedicamentosState extends State<AgregarMedicamentos> {
                   );
                   print('Medicamentos almacenado: ${_nombreMedicamentoController.text}');
                 },
-                child: Text('Registrar Medicamento'),
+                child: Text(
+                  'Registrar Medicamento',
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                ),
               ),
             ),
           ],
@@ -102,8 +113,9 @@ class _AgregarMedicamentosState extends State<AgregarMedicamentos> {
       ),
     );
   }
-
-  void _showNotification() {
+  
+  /// Para mostrar las notificaciones
+  void mostrarNotificaciones() {
     if (_selectedIntervalo != null && _intervaloPersonalizado != null && _intervaloPersonalizado!.isNotEmpty) {
       int intervalo = int.tryParse(_intervaloPersonalizado!) ?? 0;
       if (intervalo > 0) {
@@ -112,17 +124,18 @@ class _AgregarMedicamentosState extends State<AgregarMedicamentos> {
         String intervaloTexto = 'cada $_intervaloPersonalizado segundos';
         String titulo = 'Nuevo medicamento registrado';
         String cuerpo = 'Medicamento: $nombreMedicamento\nDosis: $dosis\nIntervalo: $intervaloTexto';
-        LocalNotifications.showDelayedNotification(
-          title: titulo,
-          body: cuerpo,
-          payload: 'payload',
-          frequency: NotificationFrequency.custom,
-          customInterval: intervalo,
+        /// Llamada el servicio para generar la notificacion
+        _notificacionViewModel.mostrarNotificacionMedicamentos(
+            titulo: titulo,
+            cuerpo: cuerpo,
+            payload: 'payload',
+            frecuencia: NotificationFrequency.custom,
+            intervaloPersonalizado: intervalo,
         );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('¡Medicamento registrado exitosamente!'),
-            duration: Duration(seconds: 2), // Duración del mensaje
+            duration: Duration(seconds: 2),
           ),
         );
       }

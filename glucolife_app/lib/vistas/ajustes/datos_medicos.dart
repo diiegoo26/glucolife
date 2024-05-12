@@ -1,22 +1,21 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/modelos/usuario.dart';
-import 'package:glucolife_app/provider/provider_usuario.dart';
+import 'package:glucolife_app/viewmodel/ajustes_viewmodel.dart';
 import 'package:glucolife_app/viewmodel/login_viewmodel.dart';
-import 'package:provider/provider.dart';
 
-class DatosMedicos extends StatefulWidget {
+class DatosMedicosVista extends StatefulWidget {
   @override
-  _DatosMedicosState createState() => _DatosMedicosState();
+  _DatosMedicosVistaState createState() => _DatosMedicosVistaState();
 }
 
-class _DatosMedicosState extends State<DatosMedicos> {
+class _DatosMedicosVistaState extends State<DatosMedicosVista> {
   bool showPassword = false;
-  final LoginViewModel _viewModel = LoginViewModel();
+  final LoginViewModel _loginViewModel = LoginViewModel();
+  final AjustesViewModel _ajustesViewModel = AjustesViewModel();
   Usuario? _usuario;
 
   @override
+  /// Inicializacion de las llamadas a los servicios
   void initState() {
     super.initState();
     _obtenerUsuarioActual();
@@ -26,67 +25,67 @@ class _DatosMedicosState extends State<DatosMedicos> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Datos medicos'),
+        title: const Text('Datos medicos'),
         backgroundColor: Colors.green,
         elevation: 0.0,
         centerTitle: true,
       ),
       body: Container(
-        padding: EdgeInsets.only(left: 16, top: 25, right: 16),
+        padding: const EdgeInsets.only(left: 16, top: 25, right: 16),
         child: GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
           },
           child: ListView(
             children: [
-              buildTextField("Altura", "${_usuario?.altura}", (value) {
+              construirCampos("Altura", "${_usuario?.altura}", (value) {
                 setState(() {
                   _usuario?.altura = double.parse(value);
                 });
               }),
-              buildTextField("Peso", "${_usuario?.peso}", (value) {
+              construirCampos("Peso", "${_usuario?.peso}", (value) {
                 setState(() {
                   _usuario?.peso = double.parse(value);
                 });
               }),
-              buildTextField(
+              construirCampos(
                   "Nivel de actividad física", "${_usuario?.nivelActividad}",
                       (value) {
                     setState(() {
                       _usuario?.nivelActividad = value;
                     });
                   }),
-              buildTextField("Unidad de medición para la comida",
+              construirCampos("Unidad de medición para la comida",
                   "${_usuario?.unidadComida}", (value) {
                     setState(() {
                       _usuario?.unidadComida = value;
                     });
                   }),
-              buildTextField("Unidad", "${_usuario?.unidad}", (value) {
+              construirCampos("Unidad", "${_usuario?.unidadMedida}", (value) {
                 setState(() {
-                  _usuario?.unidad = value;
+                  _usuario?.unidadMedida = value;
                 });
               }),
-              buildTextField(
+              construirCampos(
                   "Nivel de hiperglucemia", "${_usuario?.hiperglucemia}",
                       (value) {
                     setState(() {
                       _usuario?.hiperglucemia = double.parse(value);
                     });
                   }),
-              buildTextField(
+              construirCampos(
                   "Nivel de hipoglucemia", "${_usuario?.hipoglucemia}",
                       (value) {
                     setState(() {
                       _usuario?.hipoglucemia = double.parse(value);
                     });
                   }),
-              buildTextField("Objetivo", "${_usuario?.objetivo}", (value) {
+              construirCampos("Nivel ideal", "${_usuario?.nivel_objetivo}", (value) {
                 setState(() {
-                  _usuario?.objetivo = double.parse(value);
+                  _usuario?.nivel_objetivo = double.parse(value);
                 });
               }),
-              SizedBox(
+              const SizedBox(
                 height: 35,
               ),
               Row(
@@ -100,7 +99,7 @@ class _DatosMedicosState extends State<DatosMedicos> {
                             borderRadius: BorderRadius.circular(20)),
                       ),
                       onPressed: () {},
-                      child: Text("Cancelar",
+                      child: const Text("Cancelar",
                           style: TextStyle(
                               fontSize: 14,
                               letterSpacing: 2.2,
@@ -110,20 +109,23 @@ class _DatosMedicosState extends State<DatosMedicos> {
                   Container(
                     width: MediaQuery.of(context).size.width * .4,
                     child: ElevatedButton(
-                      onPressed: _guardarCambiosUsuario,
+                      onPressed: () {
+                        /// Llamada al servicio para almacenar los cambios
+                        _ajustesViewModel.guardarDatosMedicos(_usuario,context);
+                      },
                       style: ElevatedButton.styleFrom(
+                        primary: Colors.white,
+                        onPrimary: Colors.green,
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
                       ),
-                      child: Text(
+                      child: const Text(
                         "Guardar",
-                        style: TextStyle(
-                            fontSize: 14,
-                            letterSpacing: 2.2,
-                            color: Colors.white),
                       ),
                     ),
-                  )
+                  ),
                 ],
               )
             ],
@@ -133,7 +135,7 @@ class _DatosMedicosState extends State<DatosMedicos> {
     );
   }
 
-  Widget buildTextField(
+  Widget construirCampos(
       String labelText,
       String placeholder,
       void Function(String) onChanged,
@@ -144,11 +146,11 @@ class _DatosMedicosState extends State<DatosMedicos> {
         onChanged: onChanged,
         decoration: InputDecoration(
           contentPadding:
-          EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+          const EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
           labelText: labelText,
           floatingLabelBehavior: FloatingLabelBehavior.always,
           hintText: placeholder,
-          hintStyle: TextStyle(
+          hintStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -158,8 +160,8 @@ class _DatosMedicosState extends State<DatosMedicos> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(
-              color: Colors.green, // Cambia este color según tus preferencias
+            borderSide: const BorderSide(
+              color: Colors.green,
             ),
           ),
         ),
@@ -167,50 +169,15 @@ class _DatosMedicosState extends State<DatosMedicos> {
     );
   }
 
+  /// Comunicacion con el servico para poder recuperar al usuario logueado
   void _obtenerUsuarioActual() async {
     try {
-      Usuario? usuario = await _viewModel.obtenerUsuarioActual();
+      Usuario? usuario = await _loginViewModel.obtenerUsuarioActual();
       setState(() {
         _usuario = usuario;
       });
     } catch (error) {
-      // Manejar el error (puedes mostrar un mensaje al usuario)
       print('Error al obtener el usuario: $error');
-    }
-  }
-
-  void _guardarCambiosUsuario() async {
-    try {
-      User? firebaseUser = FirebaseAuth.instance.currentUser;
-      if (firebaseUser != null) {
-        await FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(firebaseUser.uid)
-            .update({
-          'altura': _usuario?.altura,
-          'peso': _usuario?.peso,
-          'hiperglucemia': _usuario?.hiperglucemia,
-          'hipoglucemia': _usuario?.hipoglucemia,
-          'nivelActividad': _usuario?.nivelActividad,
-          'objetivo': _usuario?.objetivo,
-          'unidad': _usuario?.unidad,
-          'unidadComida': _usuario?.unidadComida,
-        });
-        UserData usuarioModel = Provider.of<UserData>(context, listen: false);
-        usuarioModel.actualizarUsuario(_usuario!);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cambios guardados correctamente.'),
-          ),
-        );
-      }
-    } catch (error) {
-      print('Error al guardar los cambios: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar los cambios.'),
-        ),
-      );
     }
   }
 }

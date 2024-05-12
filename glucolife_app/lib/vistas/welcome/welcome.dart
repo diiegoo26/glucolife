@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:glucolife_app/vistas/login/signUp.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class BienvenidaVista extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,11 +13,11 @@ class WelcomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage(
-                      'assets/imagenes/fondo.jpg'), // Reemplaza con la ruta de tu imagen
+                      'assets/imagenes/fondo.jpg'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.green.withOpacity(
-                        0.5), // Ajusta la opacidad según sea necesario
+                        0.5),
                     BlendMode.srcOver,
                   ),
                 ),
@@ -38,7 +38,7 @@ class WelcomeScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                      MaterialPageRoute(builder: (context) => LoginVista()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

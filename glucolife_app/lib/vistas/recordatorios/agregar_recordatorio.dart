@@ -1,41 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:glucolife_app/modelos/Recordatorio.dart';
-import 'package:glucolife_app/viewmodel/medicaciones_viewmodel.dart';
-import 'package:glucolife_app/viewmodel/recordatorios.viewmodel.dart';
+import 'package:glucolife_app/modelos/recordatorio.dart';
+import 'package:glucolife_app/servicios/NotificacionServicio.dart';
+import 'package:glucolife_app/servicios/RecordatorioServicio.dart';
+import 'package:glucolife_app/viewmodel/notificacion_viewmodel.dart';
+import 'package:glucolife_app/viewmodel/recordatorio_viewmodel.dart';
 import 'package:glucolife_app/vistas/recordatorios/visualizar_recordatorios.dart';
 
 class AgregarRecordatorio extends StatefulWidget {
   @override
-  _AgregarRecordatorioState createState() =>
-      _AgregarRecordatorioState();
+  _AgregarRecordatorioState createState() => _AgregarRecordatorioState();
 }
 
-class _AgregarRecordatorioState
-    extends State<AgregarRecordatorio> {
+class _AgregarRecordatorioState extends State<AgregarRecordatorio> {
+  RecordatorioViewModel _recordatorioViewModel = RecordatorioViewModel(recordatorioServicio: RecordatorioServicio());
+  NotificacionViewModel _notificacionViewModel = NotificacionViewModel(notificacionServicio: NotificacionServicio());
   DateTime _selectedDateTime = DateTime.now();
   TextEditingController _descriptionController = TextEditingController();
 
-  Future<void> _scheduleNotification() async {
-    try {
-      await RecordatoriosViewModel.showDelayedNotification2(
-        title: 'Recordatorio',
-        body: _descriptionController.text,
-        payload: 'Payload de la notificación',
-        scheduledDateTime: _selectedDateTime,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Notificación programada con éxito')));
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Programar recordatorio'),
+        backgroundColor: Colors.green,
       ),
       body: Padding(
         padding: EdgeInsets.all(20.0),
@@ -43,6 +32,11 @@ class _AgregarRecordatorioState
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
+            TextField(
+              controller: _descriptionController,
+              decoration: InputDecoration(labelText: 'Descripción'),
+            ),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 final pickedDateTime = await showDatePicker(
@@ -64,6 +58,14 @@ class _AgregarRecordatorioState
                 }
               },
               child: Text('Seleccionar Fecha'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.white,
+                onPrimary: Colors.green,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
@@ -85,21 +87,22 @@ class _AgregarRecordatorioState
                 }
               },
               child: Text('Seleccionar Hora'),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Descripción'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.white,
+                onPrimary: Colors.green,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 String descripcion = _descriptionController.text;
-                DateTime fecha=_selectedDateTime;
-                RecordatoriosViewModel.agregarRecordatorioAFirebase(Recordatorio(
-                  descripcion: descripcion,
-                  fecha: fecha,
-                ));
+                DateTime fecha = _selectedDateTime;
+                /// Llamada al servicio para almacenar el recordatorio en Firebase
+                _recordatorioViewModel.agregarRecordatorio(Recordatorio(descripcion: descripcion,fecha: fecha));
                 _scheduleNotification(); // Llama al método para programar la notificación
                 Navigator.push(
                   context,
@@ -109,9 +112,16 @@ class _AgregarRecordatorioState
                 );
                 print('Recordatorio almacenado: ${_descriptionController.text}');
               },
-              child: Text('Agregar recuerdo'),
+              child: Text('Agregar recordatorio'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.white,
+                onPrimary: Colors.green,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
             ),
-
           ],
         ),
       ),
@@ -122,5 +132,25 @@ class _AgregarRecordatorioState
   void dispose() {
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _scheduleNotification() async {
+    try {
+      /// Llamada al servicio para mostrar la notificacion
+      await _notificacionViewModel.mostrarNotificacionRecordatorios(
+        titulo: 'Recordatorio',
+        cuerpo: _descriptionController.text,
+        frecuencia: NotificationFrequency.daily,
+        payload: 'Payload de la notificación',
+        scheduledDateTime: _selectedDateTime,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Notificación programada con éxito'),
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e.toString()),
+      ));
+    }
   }
 }

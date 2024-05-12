@@ -1,84 +1,124 @@
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class LineChartSample7 extends StatelessWidget {
-  LineChartSample7({
+class LecturaNoActualVista extends StatelessWidget {
+  LecturaNoActualVista({
     super.key,
-    Color? line1Color,
-    Color? line2Color,
+    Color? valor_real,
+    Color? valor_ideal,
     Color? betweenColor,
-  })  : line1Color = line1Color ?? Colors.green,
-        line2Color = line2Color ?? Colors.blue,
+  })  : valor_real = valor_real ?? Colors.green,
+        valor_ideal = valor_ideal ?? Colors.blue,
         betweenColor =
             betweenColor ?? Colors.red.withOpacity(0.5);
 
-  final Color line1Color;
-  final Color line2Color;
+  final Color valor_real;
+  final Color valor_ideal;
   final Color betweenColor;
 
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
+  Widget ejeX(double value, TitleMeta meta) {
     const style = TextStyle(
-      fontSize: 10,
+      fontSize: 8,
       fontWeight: FontWeight.bold,
     );
     String text;
     switch (value.toInt()) {
       case 0:
-        text = 'Jan';
+        text = '00:00';
         break;
       case 1:
-        text = 'Feb';
+        text = '02:00';
         break;
       case 2:
-        text = 'Mar';
+        text = '04:00';
         break;
       case 3:
-        text = 'Apr';
+        text = '06:00';
         break;
       case 4:
-        text = 'May';
+        text = '08:00';
         break;
       case 5:
-        text = 'Jun';
+        text = '10:00';
         break;
       case 6:
-        text = 'Jul';
+        text = '12:00';
         break;
       case 7:
-        text = 'Aug';
+        text = '14:00';
         break;
       case 8:
-        text = 'Sep';
+        text = '16:00';
         break;
       case 9:
-        text = 'Oct';
+        text = '18:00';
         break;
       case 10:
-        text = 'Nov';
+        text = '20:00';
         break;
       case 11:
-        text = 'Dec';
+        text = '22:00';
         break;
       default:
         return Container();
     }
 
+
     return SideTitleWidget(
       axisSide: meta.axisSide,
-      space: 4,
+      space: 10,
       child: Text(text, style: style),
     );
   }
 
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(fontSize: 10);
+  Widget ejeY(double value, TitleMeta meta) {
+    const style = TextStyle(
+      fontSize: 8,
+      fontWeight: FontWeight.bold,
+    );
+    String text;
+    switch (value.toInt()) {
+      case 0:
+        text = '50';
+        break;
+      case 1:
+        text = '100';
+        break;
+      case 2:
+        text = '130';
+        break;
+      case 3:
+        text = '150';
+        break;
+      case 4:
+        text = '180';
+        break;
+      case 5:
+        text = '200';
+        break;
+      case 6:
+        text = '220';
+        break;
+      case 7:
+        text = '250';
+        break;
+      case 8:
+        text = '300';
+        break;
+      case 9:
+        text = '350';
+        break;
+      default:
+        return Container();
+    }
+
 
     return SideTitleWidget(
       axisSide: meta.axisSide,
-      child: Text(
-        '\$ ${value + 0.5}',
-        style: style,
-      ),
+      space: 10,
+      child: Text(text, style: style),
     );
   }
 
@@ -114,7 +154,7 @@ class LineChartSample7 extends StatelessWidget {
                 ],
                 isCurved: true,
                 barWidth: 2,
-                color: line1Color,
+                color: valor_real,
                 dotData: const FlDotData(
                   show: false,
                 ),
@@ -136,7 +176,7 @@ class LineChartSample7 extends StatelessWidget {
                 ],
                 isCurved: false,
                 barWidth: 2,
-                color: line2Color,
+                color: valor_ideal,
                 dotData: const FlDotData(
                   show: false,
                 ),
@@ -158,13 +198,13 @@ class LineChartSample7 extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   interval: 1,
-                  getTitlesWidget: bottomTitleWidgets,
+                  getTitlesWidget: ejeX,
                 ),
               ),
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  getTitlesWidget: leftTitleWidgets,
+                  getTitlesWidget: ejeY,
                   interval: 1,
                   reservedSize: 36,
                 ),

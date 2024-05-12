@@ -1,8 +1,3 @@
-import 'package:glucolife_app/modelos/Recordatorio.dart';
-import 'package:glucolife_app/modelos/actividad.dart';
-import 'package:glucolife_app/modelos/alimentos.dart';
-import 'package:glucolife_app/modelos/medicamento.dart';
-
 /// Clase que representa un usuario en el sistema.
 class Usuario {
   /// Nombre del usuario.
@@ -23,14 +18,14 @@ class Usuario {
   double peso;
   /// Unidad utilizada para las mediciones de comida.
   String unidadComida;
-  /// Unidad utilizada para las mediciones.
-  String unidad;
+  /// Unidad utilizada para las mediciones de glucosa.
+  String unidadMedida;
   /// Valor de hiperglucemia del usuario.
   double hiperglucemia;
   /// Valor de hipoglucemia del usuario.
   double hipoglucemia;
-  /// Objetivo del usuario.
-  double objetivo;
+  /// Nivel de glucosa a obtener del usuario.
+  double nivel_objetivo;
   /// URL de la imagen de perfil del usuario.
   String imagenUrl;
 
@@ -45,10 +40,10 @@ class Usuario {
     required this.altura,
     required this.peso,
     required this.unidadComida,
-    required this.unidad,
+    required this.unidadMedida,
     required this.hiperglucemia,
     required this.hipoglucemia,
-    required this.objetivo,
+    required this.nivel_objetivo,
     required this.imagenUrl,
   });
 }
