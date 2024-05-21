@@ -14,6 +14,12 @@ class _RecuperarPassVistaState extends State<RecuperarPassVista> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Cambiar contraseña'),
+        backgroundColor: Colors.green,
+        elevation: 0.0,
+        centerTitle: true,
+      ),
       body: Stack(
         children: [
           Positioned.fill(
@@ -38,14 +44,6 @@ class _RecuperarPassVistaState extends State<RecuperarPassVista> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 20.0),
-                  Text(
-                    'Recuperar contraseña',
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
                   SizedBox(height: 20.0),
                   _buildTextField('Email', _emailController,
                       keyboardType: TextInputType.emailAddress),
@@ -76,7 +74,7 @@ class _RecuperarPassVistaState extends State<RecuperarPassVista> {
                       ),
                     ),
                     child: Text(
-                      'Enviar correo de recuperación',
+                      'Enviar correo',
                       style: TextStyle(fontSize: 16),
                     ),
                   ),
